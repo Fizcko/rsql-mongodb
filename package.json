@@ -1,6 +1,6 @@
 {
   "name": "rsql-mongodb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converting RSQL queries to MongoDB queries",
   "main": "rsql-mongodb.js",
   "typings": "rsql-mongodb.ts",
@@ -29,8 +29,7 @@
     "search",
     "query"
   ],
-  "dependencies": {
-    "express": "^4.17.0",
+  "devDependencies": {
     "mocha": "^6.1.4"
   }
 }
