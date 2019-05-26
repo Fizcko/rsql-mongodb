@@ -1,0 +1,36 @@
+{
+  "name": "rsql-mongodb",
+  "version": "1.0.0",
+  "description": "Converting RSQL queries to MongoDB queries",
+  "main": "rsql-mongodb.js",
+  "typings": "rsql-mongodb.ts",
+  "files": [
+    "rsql-mongodb.js",
+    "rsql-mongodb.ts",
+    "Readme.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "standard",
+    "test": "mocha -- -R spec --bail"
+  },
+  "author": "Fizcko",
+  "license": "MIT",
+  "repository": "https://github.com/Fizcko/rsql-mongodb",
+  "bugs": {
+    "url": "https://github.com/Fizcko/rsql-mongodb/issues"
+  },
+  "homepage": "https://github.com/Fizcko/rsql-mongodb",
+  "keywords": [
+    "rsql",
+    "mongo",
+    "mongoDB",
+    "parser",
+    "search",
+    "query"
+  ],
+  "dependencies": {
+    "express": "^4.17.0",
+    "mocha": "^6.1.4"
+  }
+}
