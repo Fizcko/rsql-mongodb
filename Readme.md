@@ -65,7 +65,7 @@ try{
     //=> { $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }
     
 }
-catch(e){
-    console.log(e);
+catch(err){
+    console.log(err);
 }
 ```

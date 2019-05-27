@@ -9,7 +9,7 @@ module.exports = function (input) {
     var logicals = [';', ','];
     var specialOperators = ['=in=', '=out='];
 
-    // Apply Shunting-yard algorithm
+    // Apply Shunting-yard algorithm applied to this use case
     // Loop for each character of the input string
     for(var i = 0; i < input.length; i++) {
 
@@ -122,7 +122,7 @@ module.exports = function (input) {
             }
 
             // Split the query
-            var rsqlOperators = /(.*[^=])(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*[^=])/g;
+            var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*)/g;
             var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
             try {
