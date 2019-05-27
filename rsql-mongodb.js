@@ -9,6 +9,8 @@ module.exports = function (input) {
     var logicals = [';', ','];
     var specialOperators = ['=in=', '=out='];
 
+    // Apply Shunting-yard algorithm
+    // Loop for each character of the input string
     for(var i = 0; i < input.length; i++) {
 
         var character = input[i];
@@ -103,6 +105,9 @@ module.exports = function (input) {
                     mongoStack.pop();
                     mongoStack.push(newValue);
                     break;
+                default:
+                    throw "Logical operator not supported."
+                    break;
             }
 
         }
@@ -117,7 +122,7 @@ module.exports = function (input) {
             }
 
             // Split the query
-            var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*)/g;
+            var rsqlOperators = /(.*[^=])(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*[^=])/g;
             var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
             try {
@@ -169,6 +174,9 @@ module.exports = function (input) {
                     exp2 = exp2.replace("(","[");
                     exp2 = exp2.replace(")","]");
                     mongoStack.push('{ "' + exp1 + '": { $nin: ' + exp2 + ' } }');
+                    break;
+                default:
+                    throw "Operator not supported."
                     break;
             }
             

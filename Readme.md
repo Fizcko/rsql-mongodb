@@ -34,31 +34,38 @@ Parenthesized expression can be used to define the precedence.
 ```js
 const rsqlMongoDB = require('rsql-mongodb');
 
-// String comparison : you have to add quotes for string values
-rsqlMongoDB('lastName=="doe"');
-//=> { "lastName" : "doe" }
+try{
 
-// Boolean comparison
-rsqlMongoDB('married!=true');
-//=> { "married": { $ne: true } }
+    // String comparison : you have to add quotes for string values
+    rsqlMongoDB('lastName=="doe"');
+    //=> { "lastName" : "doe" }
 
-// Number comparison
-rsqlMongoDB('childs=gt=2');
-//=> { "childs": { $gt: 2 } }
+    // Boolean comparison
+    rsqlMongoDB('married!=true');
+    //=> { "married": { $ne: true } }
 
-// Date comparison
-rsqlMongoDB('birthday=ge=1959-10-21');
-//=> { "birthday": { $gte: new Date("1959-10-21") } }
+    // Number comparison
+    rsqlMongoDB('childs=gt=2');
+    //=> { "childs": { $gt: 2 } }
 
-// In comparison
-rsqlMongoDB('childs=in=(1,2,3)');
-//=> { "childs": { $in: [1,2,3] } }
+    // Date comparison
+    rsqlMongoDB('birthday=ge=1959-10-21');
+    //=> { "birthday": { $gte: new Date("1959-10-21") } }
 
-// Out comparison
-rsqlMongoDB('childs=out=(1,2,3)');
-//=> { "childs": { $nin: [1,2,3] } }
+    // In comparison
+    rsqlMongoDB('childs=in=(1,2,3)');
+    //=> { "childs": { $in: [1,2,3] } }
 
-// Groups
-rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName=="janne";lastName=="doe")');
-//=> { $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }
+    // Out comparison
+    rsqlMongoDB('childs=out=(1,2,3)');
+    //=> { "childs": { $nin: [1,2,3] } }
+
+    // Groups
+    rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName=="janne";lastName=="doe")');
+    //=> { $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }
+    
+}
+catch(e){
+    console.log(e);
+}
 ```

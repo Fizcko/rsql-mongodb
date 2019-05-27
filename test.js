@@ -1,4 +1,6 @@
 const assert = require('assert');
+const chai = require('chai'); 
+const expect = chai.expect;
 const rsqlMongoDB = require('./');
 
 describe('rsql-mongodb', function () {
@@ -50,5 +52,9 @@ describe('rsql-mongodb', function () {
     }); 
     it("Test groups", function () {
         assert.equal(rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName=="janne";lastName=="doe")'), '{ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }');
-    }); 
+    });
+    it("Test errors", function () {
+        expect(function () { rsqlMongoDB('azerty') }).to.throw('Wrong RSQL query.');
+        expect(function () { rsqlMongoDB('firstName=={ $where: [ { lastName : "doe" } ] }') }).to.throw('Injection detected.');
+    });
 });
