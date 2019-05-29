@@ -20,7 +20,8 @@ function setType(input) {
     }
     else if(matchDate.exec(input)){
         if(Date.parse(input)){
-            typedInput = new Date('"' + input + '"');
+            var isoUTCDate = new Date(input).toISOString();
+            typedInput = new Date('"' + isoUTCDate + '"');
         }
     }
 

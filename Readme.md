@@ -36,7 +36,7 @@ const rsqlMongoDB = require('rsql-mongodb');
 
 try{
 
-    // String comparison : you have to add quotes for string values
+    // String comparison : you can add quotes for string values
     rsqlMongoDB('lastName=="doe"');
     //=> { "lastName" : "doe" }
 
@@ -50,7 +50,7 @@ try{
 
     // Date comparison
     rsqlMongoDB('birthday=ge=1959-10-21');
-    //=> { "birthday": { $gte: new Date("1959-10-21") } }
+    //=> { "birthday": { $gte: new Date("1959-10-21T00:00:00.000Z") } }
 
     // In comparison
     rsqlMongoDB('childs=in=(1,2,3)');
@@ -61,7 +61,7 @@ try{
     //=> { "childs": { $nin: [1,2,3] } }
 
     // Groups
-    rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName=="janne";lastName=="doe")');
+    rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName==janne;lastName==doe)');
     //=> { $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }
     
 }
