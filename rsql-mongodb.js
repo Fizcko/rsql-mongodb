@@ -1,3 +1,32 @@
+function setType(input) {
+
+    var typedInput = input;
+
+    var matchQuotes = /^(["']{1})(.*)(["']{1})$/g;
+    var matchQuotesResults = matchQuotes.exec(input);
+    var matchDate = /(\d{4})-(\d{2})-(\d{2})/g;
+
+    if(matchQuotesResults){
+        typedInput = matchQuotesResults[2];
+    }
+    else if(input === 'true'){
+        typedInput = true;
+    }
+    else if(input === 'false'){
+        typedInput = false;
+    }
+    else if (!isNaN(Number(input))) {
+        typedInput = Number(input);
+    }
+    else if(matchDate.exec(input)){
+        if(Date.parse(input)){
+            typedInput = new Date('"' + input + '"');
+        }
+    }
+
+    return typedInput;
+}
+
 module.exports = function (input) {
 
     // Define variables
@@ -92,23 +121,23 @@ module.exports = function (input) {
 
         if(logicals.indexOf(outputTab[i]) !== -1){
 
+            var newValue = {};
+
             switch(outputTab[i]){
                 case ";":
-                    var newValue = '{ $and: [ ' + mongoStack[mongoStack.length - 2] + ' , ' + mongoStack[mongoStack.length - 1] + ' ] }';
-                    mongoStack.pop();
-                    mongoStack.pop();
-                    mongoStack.push(newValue);
+                    newValue['$and'] = [mongoStack[mongoStack.length - 2],mongoStack[mongoStack.length - 1]];
                     break;
                 case ",":
-                    var newValue = '{ $or: [ ' + mongoStack[mongoStack.length - 2] + ' , ' + mongoStack[mongoStack.length - 1] + ' ] }';
-                    mongoStack.pop();
-                    mongoStack.pop();
-                    mongoStack.push(newValue);
+                    newValue['$or'] = [mongoStack[mongoStack.length - 2],mongoStack[mongoStack.length - 1]];
                     break;
                 default:
                     throw "Logical operator not supported."
                     break;
             }
+
+            mongoStack.pop();
+            mongoStack.pop();
+            mongoStack.push(newValue);
 
         }
         else{
@@ -132,53 +161,56 @@ module.exports = function (input) {
                 
             }
             catch(e){
-                throw "Wrong RSQL query."
+                throw "Wrong RSQL query. No operator found."
             }
 
-            // Check if there is a date in exp2
-            var checkString = /^(\"|\').*(\"|\')$/g;
-            if(!checkString.exec(exp2)){
-                var checkDate = /(\d{4})-(\d{2})-(\d{2})/g;
-                if(checkDate.exec(exp2)){
-                    if(Date.parse(exp2)){
-                        exp2 = 'new Date("' + exp2 + '")'
-                    }
-                }
-            }
+
+            var typedExp2 = setType(exp2);
+            var mongoQuery = {};
 
             switch(operator){
                 case "==":
-                    mongoStack.push('{ "' + exp1 + '" : ' + exp2 + ' }');
+                    mongoQuery[exp1] = typedExp2;
                     break;
                 case "!=":
-                    mongoStack.push('{ "' + exp1 + '": { $ne: ' + exp2 + ' } }');
+                    mongoQuery[exp1] = { $ne: typedExp2 };
                     break;
                 case "=gt=":
-                    mongoStack.push('{ "' + exp1 + '": { $gt: ' + exp2 + ' } }');
+                    mongoQuery[exp1] = { $gt: typedExp2 };
                     break;
                 case "=ge=":
-                    mongoStack.push('{ "' + exp1 + '": { $gte: ' + exp2 + ' } }');
+                    mongoQuery[exp1] = { $gte: typedExp2 };
                     break;
                 case "=lt=":
-                    mongoStack.push('{ "' + exp1 + '": { $lt: ' + exp2 + ' } }');
+                    mongoQuery[exp1] = { $lt: typedExp2 };
                     break;
                 case "=le=":
-                    mongoStack.push('{ "' + exp1 + '": { $lte: ' + exp2 + ' } }');
+                    mongoQuery[exp1] = { $lte: typedExp2 };
                     break;
                 case "=in=":
-                    exp2 = exp2.replace("(","[");
-                    exp2 = exp2.replace(")","]");
-                    mongoStack.push('{ "' + exp1 + '": { $in: ' + exp2 + ' } }');
+                    typedExp2 = typedExp2.replace("(","");
+                    typedExp2 = typedExp2.replace(")","");
+                    var typedValues = new Array();
+                    for ( var token of typedExp2.split(",") ) {
+                        typedValues.push(setType(token));
+                    }
+                    mongoQuery[exp1] = { $in: typedValues };
                     break;
                 case "=out=":
-                    exp2 = exp2.replace("(","[");
-                    exp2 = exp2.replace(")","]");
-                    mongoStack.push('{ "' + exp1 + '": { $nin: ' + exp2 + ' } }');
+                    typedExp2 = typedExp2.replace("(","");
+                    typedExp2 = typedExp2.replace(")","");
+                    var typedValues = new Array();
+                    for ( var token of typedExp2.split(",") ) {
+                        typedValues.push(setType(token));
+                    }
+                    mongoQuery[exp1] = { $nin: typedValues };
                     break;
                 default:
                     throw "Operator not supported."
                     break;
             }
+
+            mongoStack.push(mongoQuery);
             
         }
 
