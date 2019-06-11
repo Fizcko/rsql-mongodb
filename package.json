@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "lint": "standard",
-    "test": "mocha -- -R spec --bail"
+    "test": "mocha -- -R spec --bail",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test.js"
   },
   "author": "Fizcko",
   "license": "MIT",
@@ -31,6 +32,7 @@
   ],
   "devDependencies": {
     "chai": "^4.2.0",
+    "istanbul": "^0.4.5",
     "mocha": "^6.1.4"
   }
 }

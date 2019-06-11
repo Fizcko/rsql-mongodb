@@ -15,7 +15,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('lastName!="doe"')).to.deep.include({ "lastName": { $ne: "doe" } });
         expect(rsqlMongoDB('birthday!="1959-10-21"')).to.deep.include({ "birthday": { $ne: "1959-10-21" } });
         expect(rsqlMongoDB('birthday!=1959-10-21')).to.be.a('object');
-        expect(rsqlMongoDB('married!=true')).to.deep.include({ "married": { $ne: true } });
+        expect(rsqlMongoDB('married!=false')).to.deep.include({ "married": { $ne: false } });
         expect(rsqlMongoDB('childs!=2')).to.deep.include({ "childs": { $ne: 2 } });
         
     });
