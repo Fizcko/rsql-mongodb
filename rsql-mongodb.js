@@ -193,7 +193,7 @@ module.exports = function (input) {
                     typedExp2 = typedExp2.replace(")","");
                     var typedValues = new Array();
                     for ( var token of typedExp2.split(",") ) {
-                        typedValues.push(setType(token));
+                        typedValues.push(setType(token.trim()));
                     }
                     mongoQuery[exp1] = { $in: typedValues };
                     break;
@@ -202,7 +202,7 @@ module.exports = function (input) {
                     typedExp2 = typedExp2.replace(")","");
                     var typedValues = new Array();
                     for ( var token of typedExp2.split(",") ) {
-                        typedValues.push(setType(token));
+                        typedValues.push(setType(token.trim()));
                     }
                     mongoQuery[exp1] = { $nin: typedValues };
                     break;

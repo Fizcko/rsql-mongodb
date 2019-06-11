@@ -42,10 +42,12 @@ describe('rsql-mongodb', function () {
     it("Test operator In ('=in=')", function () {
         expect(rsqlMongoDB('childs=in=(1,2,3)')).to.deep.include({ "childs": { $in: [1,2,3] } });
         expect(rsqlMongoDB('childs=in=("1","2","3")')).to.deep.include({ "childs": { $in: ["1","2","3"] } });
+        expect(rsqlMongoDB('childs=in=(1, 2, 3 )')).to.deep.include({ "childs": { $in: [1,2,3] } });
     });
     it("Test operator Out ('=out=')", function () {
         expect(rsqlMongoDB('childs=out=(1,2,3)')).to.deep.include({ "childs": { $nin: [1,2,3] } });
         expect(rsqlMongoDB('childs=out=("1","2","3")')).to.deep.include({ "childs": { $nin: ["1","2","3"] } });
+        expect(rsqlMongoDB('childs=out=(1, 2, 3 )')).to.deep.include({ "childs": { $nin: [1,2,3] } });
     });
     it("Test logical operator AND (';')", function () {
         expect(rsqlMongoDB('firstName=="john";lastName=="doe"')).to.deep.include({ $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] });
