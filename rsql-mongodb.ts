@@ -1,3 +1,3 @@
-declare function rsqlMongoDB (input: string): string;
+declare function rsqlMongoDB (input: string): object;
 
 export = rsqlMongoDB;
