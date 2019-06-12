@@ -2,6 +2,10 @@
 
 Converting RSQL queries to MongoDB queries.
 
+[![NPM Version][npm-image]][npm-url]
+[![Build][build-image]][build-url]
+[![Coverage][coveralls-image]][coveralls-url]
+
 ## Installation
 
 ```bash
@@ -77,3 +81,14 @@ catch(err){
     console.log(err);
 }
 ```
+
+## License
+
+[MIT](LICENSE)
+
+[npm-image]: https://img.shields.io/npm/v/rsql-mongodb.svg
+[npm-url]: https://npmjs.org/package/rsql-mongodb
+[build-image]: https://img.shields.io/appveyor/ci/Fizcko/rsql-mongodb/master.svg
+[build-url]: https://ci.appveyor.com/project/dougwilson/express
+[coveralls-image]: https://img.shields.io/coveralls/Fizcko/rsql-mongodb/master.svg
+[coveralls-url]: https://coveralls.io/r/Fizcko/rsql-mongodb?branch=master
