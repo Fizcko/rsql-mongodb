@@ -88,7 +88,7 @@ catch(err){
 
 [npm-image]: https://img.shields.io/npm/v/rsql-mongodb.svg
 [npm-url]: https://npmjs.org/package/rsql-mongodb
-[build-image]: https://img.shields.io/appveyor/ci/Fizcko/rsql-mongodb/master.svg
-[build-url]: https://ci.appveyor.com/project/dougwilson/express
-[coveralls-image]: https://img.shields.io/coveralls/Fizcko/rsql-mongodb/master.svg
-[coveralls-url]: https://coveralls.io/r/Fizcko/rsql-mongodb?branch=master
+[build-image]: https://travis-ci.org/Fizcko/rsql-mongodb.svg?branch=master
+[build-url]: https://travis-ci.org/Fizcko/rsql-mongodb
+[coveralls-image]: https://coveralls.io/repos/github/Fizcko/rsql-mongodb/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/Fizcko/rsql-mongodb?branch=master
