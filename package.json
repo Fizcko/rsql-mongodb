@@ -31,7 +31,8 @@
     "parser",
     "search",
     "query",
-    "rest"
+    "rest",
+    "restful"
   ],
   "devDependencies": {
     "chai": "4.2.0",
