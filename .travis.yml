@@ -9,4 +9,4 @@ script:
   - npm run test-cov-ci
 branches:
   only:
-    - master
+    - develop
