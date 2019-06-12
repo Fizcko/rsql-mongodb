@@ -14,7 +14,7 @@
     "lint": "standard",
     "test": "mocha -- -R spec --bail",
     "test-cov": "nyc --reporter=text --reporter=html mocha --recursive --exit",
-    "test-cov-ci": "nyc npm test && nyc report --reporter=text-lcov"
+    "test-cov-ci": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Fizcko",
   "license": "MIT",
