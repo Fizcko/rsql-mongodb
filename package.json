@@ -1,6 +1,6 @@
 {
   "name": "rsql-mongodb",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Converting RSQL queries to MongoDB queries",
   "main": "rsql-mongodb.js",
   "typings": "rsql-mongodb.ts",
@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "standard",
     "test": "mocha -- -R spec --bail",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test.js"
+    "test-cov": "nyc --reporter=text --reporter=html mocha --recursive --exit"
   },
   "author": "Fizcko",
   "license": "MIT",
@@ -24,15 +24,17 @@
   "homepage": "https://github.com/Fizcko/rsql-mongodb",
   "keywords": [
     "rsql",
+    "fiql",
     "mongo",
     "mongoDB",
     "parser",
     "search",
-    "query"
+    "query",
+    "rest"
   ],
   "devDependencies": {
-    "chai": "^4.2.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^6.1.4"
+    "chai": "4.2.0",
+    "mocha": "6.1.4",
+    "nyc": "14.1.1"
   }
 }
