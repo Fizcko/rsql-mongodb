@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "node"
+  - "lts/*"
+  - "8"
+  - "6"
+sudo: false
+script:
+  - npm run test-cov-ci
+branches:
+  only:
+    - master

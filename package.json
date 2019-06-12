@@ -13,7 +13,8 @@
   "scripts": {
     "lint": "standard",
     "test": "mocha -- -R spec --bail",
-    "test-cov": "nyc --reporter=text --reporter=html mocha --recursive --exit"
+    "test-cov": "nyc --reporter=text --reporter=html mocha --recursive --exit",
+    "test-cov-ci": "nyc npm test && nyc report --reporter=text-lcov"
   },
   "author": "Fizcko",
   "license": "MIT",
@@ -34,6 +35,7 @@
   ],
   "devDependencies": {
     "chai": "4.2.0",
+    "coveralls": "3.0.4",
     "mocha": "6.1.4",
     "nyc": "14.1.1"
   }
