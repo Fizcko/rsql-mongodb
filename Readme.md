@@ -10,7 +10,8 @@ $ npm install rsql-mongodb
 
 ## What is RSQL
 
-RSQL is a query language that introduces basic and logical operators. It is perfect for RESTful APIs.
+RSQL (RESTful Service Query Language) is based on FIQL (Feed Item Query Language).  
+It's a query language that introduces basic and logical operators. This is perfect for RESTful APIs.
 
 #### Basic operators supported
 - Equal to : ==
@@ -29,6 +30,11 @@ RSQL is a query language that introduces basic and logical operators. It is perf
 ###### NOTE
 Parenthesized expression can be used to define the precedence.
 
+## Return values
+
+Return an Object or null.  
+This object can be passed to mongoDB methods find(), findOne(), ...
+
 ## Examples
 
 ```js
@@ -36,9 +42,11 @@ const rsqlMongoDB = require('rsql-mongodb');
 
 try{
 
-    // String comparison : you can add quotes for string values
+    // String comparison : you can add quotes to force string values
     rsqlMongoDB('lastName=="doe"');
     //=> { "lastName" : "doe" }
+    rsqlMongoDB('lastName==janne');
+    //=> { "lastName" : "janne" }
 
     // Boolean comparison
     rsqlMongoDB('married!=true');
