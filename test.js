@@ -4,6 +4,9 @@ const expect = chai.expect;
 const rsqlMongoDB = require('./');
 
 describe('rsql-mongodb', function () {
+    it("Test null return", function () {
+        expect(rsqlMongoDB('')).to.be.null;
+    });
     it("Test operator Equal To ('==')", function () {
         expect(rsqlMongoDB('lastName=="doe"')).to.deep.include({ "lastName" : "doe" });
         expect(rsqlMongoDB('birthday=="1959-10-21"')).to.deep.include({ "birthday" : "1959-10-21" });
@@ -56,9 +59,13 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('firstName=="john",firstName=="janne"')).to.deep.include({ $or: [ { "firstName" : "john" } , { "firstName" : "janne" } ] });
     }); 
     it("Test groups", function () {
-        expect(rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName=="janne";lastName=="doe")')).to.deep.include({ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] });
-        expect(rsqlMongoDB('(firstName==john;lastName==doe),(firstName=="janne";lastName=="doe")')).to.deep.include({ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] });
+        expect(rsqlMongoDB('(firstName==john;lastName==doe),(firstName==janne;lastName==doe)')).to.deep.include({ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] });
+        expect(rsqlMongoDB('(firstName==john,firstName==janne),married==true;lastName==doe')).to.deep.include({$and:[{$or:[{$or:[{"firstName":"john"},{"firstName":"janne"}]},{"married":true}]},{"lastName":"doe"}]});
     });
+    it("Test other cases", function () {
+        expect(rsqlMongoDB('firstName==john,firstName==janne,firstName==jim')).to.deep.include({$or:[{"firstName":"john"},{"firstName":"janne"},{"firstName":"jim"}]});
+        expect(rsqlMongoDB('firstName==john,firstName==janne,firstName==jim;lastName==doe')).to.deep.include({$and:[{$or:[{"firstName":"john"},{"firstName":"janne"},{"firstName":"jim"}]},{"lastName":"doe"}]});
+    });  
     it("Test errors", function () {
         expect(function () { rsqlMongoDB('azerty') }).to.throw('Wrong RSQL query. No operator found.');
         expect(function () { rsqlMongoDB('firstName=={ $where: [ { lastName : "doe" } ] }') }).to.throw('Injection detected.');

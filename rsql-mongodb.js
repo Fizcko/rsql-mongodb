@@ -31,192 +31,236 @@ function setType(input) {
 module.exports = function (input) {
 
     // Define variables
-    var outputString = "";
-    var outputTab = [];
-    var logicalsTab = [];
-    var specialOperator = false;
+	var outputString = "";
+	var outputTab = [];
+	var logicalsTab = [];
+	var specialOperator = false;
 
-    var logicals = [';', ','];
-    var specialOperators = ['=in=', '=out='];
+	// Define logical & special operators
+	var logicals = [';', ','];
+	var specialOperators = ['=in=', '=out='];
 
-    // Apply Shunting-yard algorithm applied to this use case
-    // Loop for each character of the input string
-    for(var i = 0; i < input.length; i++) {
+	// Apply Shunting-yard algorithm applied to this use case
+	//
+	// Loop for each character of the input string
+	for(var i = 0; i < input.length; i++) {
 
-        var character = input[i];
+		// Move into input string
+		var character = input[i];
 
-        if(logicals.indexOf(character) !== -1) {
+		// If the character is a logical operator
+		if(logicals.indexOf(character) !== -1) {
+			
+			// If the character is a special operator
+			if(specialOperator){
+				outputString += character;
+			}
+			else{
+				
+				// Get last logical operator in the 'logicalsTab'
+				var lastLogical = logicalsTab[logicalsTab.length - 1];
 
-            if(specialOperator){
-                outputString += character;
-            }
-            else{
-                
-                var lastLogical = logicalsTab[logicalsTab.length - 1];
+				// If there is something into buffer 'outputString' push it into 'outputTab'
+				if(outputString){
+					outputTab.push(outputString);
+					outputString = ""; 
+				}
 
-                if(outputString){
-                    outputTab.push(outputString);
-                    outputString = ""; 
-                }
+				// Push the logical character into 'outputTab' if the last logical operator is not the same that the current
+				while(logicals.indexOf(lastLogical) !== -1) {
+					if(lastLogical == character){
+						logicalsTab.pop();
+					}
+					else{
+						outputTab.push(logicalsTab.pop());
+					}
+					
+					lastLogical = logicalsTab[logicalsTab.length - 1];
+				}
+				 
+				// Push the character into 'logicalsTab'
+				logicalsTab.push(character);
+			}
 
-                while(logicals.indexOf(lastLogical) !== -1) {
-                    outputTab.push(logicalsTab.pop());
-                    lastLogical = logicalsTab[logicalsTab.length - 1];
-                }
+		} 
+		// If the character is an open parenthesis
+		else if(character === "(") {
 
-                logicalsTab.push(character);
-            }
+			// if the parenthesis is value of a special operator then push it into 'outputString' buffer
+			if(specialOperators.indexOf(outputString.substring(outputString.length - 4, outputString.length)) !== -1 || specialOperators.indexOf(outputString.substring(outputString.length - 5, outputString.length)) !== -1){
+				specialOperator = true;
+				outputString += character;
+			}
+			// Else push the character into the 'logicalsTab'
+			else{
+				logicalsTab.push(character);
+			}
 
-        } else if(character === "(") {
+		} 
+		// If the character is a closed parenthesis
+		else if(character === ")") {
 
-            if(specialOperators.indexOf(outputString.substring(outputString.length - 4, outputString.length)) !== -1 || specialOperators.indexOf(outputString.substring(outputString.length - 5, outputString.length)) !== -1){
-                specialOperator = true;
-                outputString += character;
-            }
-            else{
-                logicalsTab.push(character);
-            }
+			// if the parenthesis is value of a special operator then push it into 'outputString' buffer
+			if(specialOperator){
+				specialOperator = false;
+				outputString += character;
+			}
+			else{
 
-        } else if(character === ")") {
+				// If there is something into buffer 'outputString' push it into 'outputTab'
+				if(outputString){
+					outputTab.push(outputString);
+					outputString = ""; 
+				}
 
-            if(specialOperator){
-                specialOperator = false;
-                outputString += character;
-            }
-            else{
+				// Push all operator presents in the parenthesis into 'outputTab'
+				while(logicalsTab[logicalsTab.length - 1] !== "(") {
+					outputTab.push(logicalsTab.pop());
+				}
+				
+				// Remove the open parenthesis from 'logicalsTab'
+				logicalsTab.pop();
+			}
+		}
+		// If the character is not an operator push it into the 'outputString' buffer
+		else{
 
-                if(outputString){
-                    outputTab.push(outputString);
-                    outputString = ""; 
-                }
+			outputString += character;
 
-                while(logicalsTab[logicalsTab.length - 1] !== "(") {
-                    outputTab.push(logicalsTab.pop());
-                }
+		}
+	}
 
-                logicalsTab.pop();
-            }
-        }
-        else{
+	// If there is something into buffer 'outputString' push it into 'outputTab'
+	if(outputString){
 
-            outputString += character;
+		outputTab.push(outputString);
+		outputString = "";
+	}
 
-        }
-    }
+	// Push all operator presents in 'logicalsTab' into 'outputTab'
+	while(logicalsTab.length > 0) {
+		outputTab.push(logicalsTab.pop());
+	}
 
-    if(outputString){
+	
+	// Now format the MongoDb Query
 
-        outputTab.push(outputString);
-        outputString = "";
-    }
+	// Define variables
+	var mongoStack = [];
+	var mongoQuery = [];
+	
+	
+	for(var i = 0; i < outputTab.length; i++) {
 
-    while(logicalsTab.length > 0) {
-        outputTab.push(logicalsTab.pop());
-    }
+		if(logicals.indexOf(outputTab[i]) !== -1){
 
-    
-    var mongoStack = [];
-    
-    // Now format to mongo
-    for(var i = 0; i < outputTab.length; i++) {
+			var newValue = {};
+			var tmpArray = [];
 
-        if(logicals.indexOf(outputTab[i]) !== -1){
+			switch(outputTab[i]){
+				case ";":
+				case ",":
+					if(i == (outputTab.length -1) || (mongoStack.length == 1 && mongoQuery.length == 1)){
+						while(mongoQuery.length > 0) {
+							tmpArray.push(mongoQuery.shift())
+						}
+					}
+					while(mongoStack.length > 0) {
+						tmpArray.push(mongoStack.shift())
+					}
+					if(outputTab[i] == ";"){
+						newValue['$and'] = tmpArray;
+					}
+					else{
+						newValue['$or'] = tmpArray;
+					}
+					break;
+				default:
+					throw "Logical operator not supported."
+			}
 
-            var newValue = {};
+			mongoQuery.push(newValue);
 
-            switch(outputTab[i]){
-                case ";":
-                    newValue['$and'] = [mongoStack[mongoStack.length - 2],mongoStack[mongoStack.length - 1]];
-                    break;
-                case ",":
-                    newValue['$or'] = [mongoStack[mongoStack.length - 2],mongoStack[mongoStack.length - 1]];
-                    break;
-                default:
-                    throw "Logical operator not supported."
-                    break;
-            }
+		}
+		else{
 
-            mongoStack.pop();
-            mongoStack.pop();
-            mongoStack.push(newValue);
+			// Verify if the is no injections
+			var mongoQueryOperators = /(\$\w+:)/g;
+			var badQuery = mongoQueryOperators.exec(outputTab[i]);
 
-        }
-        else{
+			if(badQuery){
+				throw "Injection detected."
+			}
 
-            // Verify if the is no injections
-            var mongoQueryOperators = /(\$\w+:)/g;
-            var badQuery = mongoQueryOperators.exec(outputTab[i]);
+			// Split the query
+			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*)/g;
+			var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
-            if(badQuery){
-                throw "Injection detected."
-            }
-
-            // Split the query
-            var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*)/g;
-            var rsqlQuery = rsqlOperators.exec(outputTab[i]);
-
-            try {
-                var exp1 = rsqlQuery[1];
-                var exp2 = rsqlQuery[3];
-                var operator = rsqlQuery[2];
-                
-            }
-            catch(e){
-                throw "Wrong RSQL query. No operator found."
-            }
+			try {
+				var exp1 = rsqlQuery[1];
+				var exp2 = rsqlQuery[3];
+				var operator = rsqlQuery[2];
+				
+			}
+			catch(e){
+				throw "Wrong RSQL query. No operator found."
+			}
 
 
-            var typedExp2 = setType(exp2);
-            var mongoQuery = {};
+			var typedExp2 = setType(exp2);
+			var mongoOperatorQuery = {};
 
-            switch(operator){
-                case "==":
-                    mongoQuery[exp1] = typedExp2;
-                    break;
-                case "!=":
-                    mongoQuery[exp1] = { $ne: typedExp2 };
-                    break;
-                case "=gt=":
-                    mongoQuery[exp1] = { $gt: typedExp2 };
-                    break;
-                case "=ge=":
-                    mongoQuery[exp1] = { $gte: typedExp2 };
-                    break;
-                case "=lt=":
-                    mongoQuery[exp1] = { $lt: typedExp2 };
-                    break;
-                case "=le=":
-                    mongoQuery[exp1] = { $lte: typedExp2 };
-                    break;
-                case "=in=":
-                    typedExp2 = typedExp2.replace("(","");
-                    typedExp2 = typedExp2.replace(")","");
-                    var typedValues = new Array();
-                    for ( var token of typedExp2.split(",") ) {
-                        typedValues.push(setType(token.trim()));
-                    }
-                    mongoQuery[exp1] = { $in: typedValues };
-                    break;
-                case "=out=":
-                    typedExp2 = typedExp2.replace("(","");
-                    typedExp2 = typedExp2.replace(")","");
-                    var typedValues = new Array();
-                    for ( var token of typedExp2.split(",") ) {
-                        typedValues.push(setType(token.trim()));
-                    }
-                    mongoQuery[exp1] = { $nin: typedValues };
-                    break;
-                default:
-                    throw "Operator not supported."
-                    break;
-            }
+			switch(operator){
+				case "==":
+					mongoOperatorQuery[exp1] = typedExp2;
+					break;
+				case "!=":
+					mongoOperatorQuery[exp1] = { $ne: typedExp2 };
+					break;
+				case "=gt=":
+					mongoOperatorQuery[exp1] = { $gt: typedExp2 };
+					break;
+				case "=ge=":
+					mongoOperatorQuery[exp1] = { $gte: typedExp2 };
+					break;
+				case "=lt=":
+					mongoOperatorQuery[exp1] = { $lt: typedExp2 };
+					break;
+				case "=le=":
+					mongoOperatorQuery[exp1] = { $lte: typedExp2 };
+					break;
+				case "=in=":
+					typedExp2 = typedExp2.replace("(","");
+					typedExp2 = typedExp2.replace(")","");
+					var typedValues = new Array();
+					for ( var token of typedExp2.split(",") ) {
+						typedValues.push(setType(token.trim()));
+					}
+					mongoOperatorQuery[exp1] = { $in: typedValues };
+					break;
+				case "=out=":
+					typedExp2 = typedExp2.replace("(","");
+					typedExp2 = typedExp2.replace(")","");
+					var typedValues = new Array();
+					for ( var token of typedExp2.split(",") ) {
+						typedValues.push(setType(token.trim()));
+					}
+					mongoOperatorQuery[exp1] = { $nin: typedValues };
+					break;
+				default:
+					throw "Operator not supported."
+			}
 
-            mongoStack.push(mongoQuery);
-            
-        }
+			mongoStack.push(mongoOperatorQuery);
+			
+		}
 
-    }
+	}
+	
+	if(mongoStack.length == 1 && mongoQuery.length == 0){
+		mongoQuery = mongoStack;
+	}
 
-    return mongoStack[0] || null;
+    return mongoQuery[0] || null;
 
 }
