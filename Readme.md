@@ -31,6 +31,9 @@ It's a query language that introduces basic and logical operators. This is perfe
 - AND : ;
 - OR : ,
 
+#### Additionals operators
+- Like : =~ (to match regex values)
+
 ###### NOTE
 Parenthesized expression can be used to define the precedence.
 
@@ -71,6 +74,10 @@ try{
     // Out comparison
     rsqlMongoDB('childs=out=(1,2,3)');
     //=> { "childs": { $nin: [1,2,3] } }
+
+    // Like operator
+    rsqlMongoDB('lastName=~do*');
+    //=> { "lastName": { $regex: "do*" } }
 
     // Groups
     rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName==janne;lastName==doe)');
