@@ -193,7 +193,7 @@ module.exports = function (input) {
 			}
 
 			// Split the query
-			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=)(.*)/g;
+			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=|=~)(.*)/g;
 			var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
 			try {
@@ -246,6 +246,9 @@ module.exports = function (input) {
 						typedValues.push(setType(token.trim()));
 					}
 					mongoOperatorQuery[exp1] = { $nin: typedValues };
+					break;
+				case "=~":
+					mongoOperatorQuery[exp1] = { $regex: typedExp2 };
 					break;
 				default:
 					throw "Operator not supported."

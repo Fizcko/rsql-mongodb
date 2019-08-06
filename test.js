@@ -52,6 +52,9 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('childs=out=("1","2","3")')).to.deep.include({ "childs": { $nin: ["1","2","3"] } });
         expect(rsqlMongoDB('childs=out=(1, 2, 3 )')).to.deep.include({ "childs": { $nin: [1,2,3] } });
     });
+    it("Test operator Like ('=~')", function () {
+        expect(rsqlMongoDB('lastName=~do*')).to.deep.include({ "lastName": { $regex: "do*" } });
+    });
     it("Test logical operator AND (';')", function () {
         expect(rsqlMongoDB('firstName=="john";lastName=="doe"')).to.deep.include({ $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] });
     }); 
