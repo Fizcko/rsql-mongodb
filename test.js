@@ -55,6 +55,12 @@ describe('rsql-mongodb', function () {
     it("Test operator Like ('=~')", function () {
         expect(rsqlMongoDB('lastName=~do*')).to.deep.include({ "lastName": { $regex: "do*" } });
     });
+    it("Test operator Exists ('=exists=')", function () {
+        expect(rsqlMongoDB('childs=exists=true')).to.deep.include({ "childs": { $exists: true } });
+        expect(rsqlMongoDB('childs=exists=false')).to.deep.include({ "childs": { $exists: false } });
+        expect(rsqlMongoDB('childs=exists=true')).to.be.a('object');
+
+    });
     it("Test logical operator AND (';')", function () {
         expect(rsqlMongoDB('firstName=="john";lastName=="doe"')).to.deep.include({ $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] });
     }); 
