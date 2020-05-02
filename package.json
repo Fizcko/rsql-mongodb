@@ -17,7 +17,7 @@
     "test-cov-ci": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Fizcko",
-  "contributors": ["zishone"],
+  "contributors": ["zishone (https://github.com/zishone)"],
   "license": "MIT",
   "repository": "https://github.com/Fizcko/rsql-mongodb",
   "bugs": {
