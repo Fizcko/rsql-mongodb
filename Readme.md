@@ -33,6 +33,7 @@ It's a query language that introduces basic and logical operators. This is perfe
 
 #### Additionals operators
 - Like : =~ (to match regex values)
+- Exists : =exists= (to check if property exists)
 
 ###### NOTE
 Parenthesized expression can be used to define the precedence.
@@ -78,6 +79,10 @@ try{
     // Like operator
     rsqlMongoDB('lastName=~do*');
     //=> { "lastName": { $regex: "do*" } }
+
+    // Exists operator
+    rsqlMongoDB('childs=exists=true');
+    //=> { "childs": { $exists: true } }
 
     // Groups
     rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName==janne;lastName==doe)');
