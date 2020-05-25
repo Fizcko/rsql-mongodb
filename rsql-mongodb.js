@@ -248,7 +248,8 @@ module.exports = function (input) {
 					mongoOperatorQuery[exp1] = { $nin: typedValues };
 					break;
 				case "=~":
-					mongoOperatorQuery[exp1] = { $regex: typedExp2 };
+					var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
+					mongoOperatorQuery[exp1] = { $regex: setType(expArr[0]), $options: expArr[2] || "" };
 					break;
 				case "=exists=":
 					mongoOperatorQuery[exp1] = { $exists: typedExp2 };
