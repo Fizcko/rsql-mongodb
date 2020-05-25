@@ -83,6 +83,8 @@ try{
     // Like operator with options
     rsqlMongoDB('lastName=~do*=si');
     //=> { "lastName": { $regex: "do*", $options: "si" } }
+    rsqlMongoDB('lastName=~"do=*"=si');
+    //=> { "lastName": { $regex: "do=*", $options: "si" } }
 
     // Exists operator
     rsqlMongoDB('childs=exists=true');

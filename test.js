@@ -56,6 +56,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('lastName=~do*')).to.deep.include({ "lastName": { $regex: "do*", $options: "" } });
         expect(rsqlMongoDB('lastName=~do*=i')).to.deep.include({ "lastName": { $regex: "do*", $options: "i" } });
         expect(rsqlMongoDB('lastName=~do*=mxs')).to.deep.include({ "lastName": { $regex: "do*", $options: "mxs" } });
+        expect(rsqlMongoDB('lastName=~"do=*"=mxs')).to.deep.include({ "lastName": { $regex: "do=*", $options: "mxs" } });
     });
     it("Test operator Exists ('=exists=')", function () {
         expect(rsqlMongoDB('childs=exists=true')).to.deep.include({ "childs": { $exists: true } });
