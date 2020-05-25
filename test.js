@@ -53,13 +53,14 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('childs=out=(1, 2, 3 )')).to.deep.include({ "childs": { $nin: [1,2,3] } });
     });
     it("Test operator Like ('=~')", function () {
-        expect(rsqlMongoDB('lastName=~do*')).to.deep.include({ "lastName": { $regex: "do*" } });
+        expect(rsqlMongoDB('lastName=~do*')).to.deep.include({ "lastName": { $regex: "do*", $options: "" } });
+        expect(rsqlMongoDB('lastName=~do*=i')).to.deep.include({ "lastName": { $regex: "do*", $options: "i" } });
+        expect(rsqlMongoDB('lastName=~do*=mxs')).to.deep.include({ "lastName": { $regex: "do*", $options: "mxs" } });
     });
     it("Test operator Exists ('=exists=')", function () {
         expect(rsqlMongoDB('childs=exists=true')).to.deep.include({ "childs": { $exists: true } });
         expect(rsqlMongoDB('childs=exists=false')).to.deep.include({ "childs": { $exists: false } });
         expect(rsqlMongoDB('childs=exists=true')).to.be.a('object');
-
     });
     it("Test logical operator AND (';')", function () {
         expect(rsqlMongoDB('firstName=="john";lastName=="doe"')).to.deep.include({ $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] });
