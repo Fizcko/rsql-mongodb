@@ -77,9 +77,10 @@ module.exports = function (input) {
 					
 					lastLogical = logicalsTab[logicalsTab.length - 1];
 				}
-				 
+
 				// Push the character into 'logicalsTab'
 				logicalsTab.push(character);
+
 			}
 
 		} 
@@ -93,7 +94,13 @@ module.exports = function (input) {
 			}
 			// Else push the character into the 'logicalsTab'
 			else{
+				
+				// Push all operator presents in 'logicalsTab' into 'outputTab'
+				while(logicalsTab.length > 0) {
+					outputTab.push(logicalsTab.pop());
+				}
 				logicalsTab.push(character);
+				outputTab.push(character);
 			}
 
 		} 
@@ -120,6 +127,7 @@ module.exports = function (input) {
 				
 				// Remove the open parenthesis from 'logicalsTab'
 				logicalsTab.pop();
+				outputTab.push(character);
 			}
 		}
 		// If the character is not an operator push it into the 'outputString' buffer
@@ -148,7 +156,9 @@ module.exports = function (input) {
 	// Define variables
 	var mongoStack = [];
 	var mongoQuery = [];
-	
+	var tmpPrecedence = [];
+	var lastLogical = "";
+	var lastLogicalBeforePrecedence = ""
 	
 	for(var i = 0; i < outputTab.length; i++) {
 
@@ -160,7 +170,7 @@ module.exports = function (input) {
 			switch(outputTab[i]){
 				case ";":
 				case ",":
-					if(i == (outputTab.length -1) || (mongoStack.length == 1 && mongoQuery.length == 1)){
+					if(i == (outputTab.length -1) || (mongoQuery.length == 1)){
 						while(mongoQuery.length > 0) {
 							tmpArray.push(mongoQuery.shift())
 						}
@@ -169,10 +179,12 @@ module.exports = function (input) {
 						tmpArray.push(mongoStack.shift())
 					}
 					if(outputTab[i] == ";"){
-						newValue['$and'] = tmpArray;
+						lastLogical = '$and';
+						newValue[lastLogical] = tmpArray;
 					}
 					else{
-						newValue['$or'] = tmpArray;
+						lastLogical = '$or';
+						newValue[lastLogical] = tmpArray;
 					}
 					break;
 				default:
@@ -181,6 +193,19 @@ module.exports = function (input) {
 
 			mongoQuery.push(newValue);
 
+		}
+		else if( outputTab[i] == '('){
+			tmpPrecedence = mongoQuery.shift();
+			lastLogicalBeforePrecedence = lastLogical;
+		}
+		else if( outputTab[i] == ')'){
+			if(tmpPrecedence){
+				tmpPrecedence[lastLogicalBeforePrecedence].push(mongoQuery.shift());
+				mongoQuery.push(tmpPrecedence);
+
+			}else{
+
+			}
 		}
 		else{
 

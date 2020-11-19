@@ -76,6 +76,8 @@ describe('rsql-mongodb', function () {
     it("Test other cases", function () {
         expect(rsqlMongoDB('firstName==john,firstName==janne,firstName==jim')).to.deep.include({$or:[{"firstName":"john"},{"firstName":"janne"},{"firstName":"jim"}]});
         expect(rsqlMongoDB('firstName==john,firstName==janne,firstName==jim;lastName==doe')).to.deep.include({$and:[{$or:[{"firstName":"john"},{"firstName":"janne"},{"firstName":"jim"}]},{"lastName":"doe"}]});
+        expect(rsqlMongoDB('a==1;(b==2,c==3)')).to.deep.include({"$and":[{"a":1},{"$or":[{"b":2},{"c":3}]}]});
+        expect(rsqlMongoDB('(b==2,c==3);a==1')).to.deep.include({"$and":[{"$or":[{"b":2},{"c":3}]},{"a":1}]});
     });  
     it("Test errors", function () {
         expect(function () { rsqlMongoDB('azerty') }).to.throw('Wrong RSQL query. No operator found.');
