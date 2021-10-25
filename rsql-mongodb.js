@@ -21,7 +21,7 @@ function setType(input) {
     else if(matchDate.exec(input)){
         if(Date.parse(input)){
             var isoUTCDate = new Date(input).toISOString();
-            typedInput = new Date('"' + isoUTCDate + '"');
+            typedInput = new Date(isoUTCDate);
         }
 		else{
 			throw "Invalid Date."

@@ -13,6 +13,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('birthday==1959-10-21')).to.be.a('object');
         expect(rsqlMongoDB('married==true')).to.deep.include({ "married" : true });
         expect(rsqlMongoDB('childs==2')).to.deep.include({ "childs" : 2 });
+        expect(rsqlMongoDB('creationDate==2021-10-30T00:00:00.000Z')).to.be.a('object');
     });
     it("Test operator Not Equal To ('!=')", function () {
         expect(rsqlMongoDB('lastName!="doe"')).to.deep.include({ "lastName": { $ne: "doe" } });
