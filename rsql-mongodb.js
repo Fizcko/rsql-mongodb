@@ -23,6 +23,9 @@ function setType(input) {
             var isoUTCDate = new Date(input).toISOString();
             typedInput = new Date('"' + isoUTCDate + '"');
         }
+		else{
+			throw "Invalid Date."
+		}
     }
 
     return typedInput;
@@ -232,55 +235,61 @@ module.exports = function (input) {
 			}
 
 
-			var typedExp2 = setType(exp2);
-			var mongoOperatorQuery = {};
+			try{
 
-			switch(operator){
-				case "==":
-					mongoOperatorQuery[exp1] = typedExp2;
-					break;
-				case "!=":
-					mongoOperatorQuery[exp1] = { $ne: typedExp2 };
-					break;
-				case "=gt=":
-					mongoOperatorQuery[exp1] = { $gt: typedExp2 };
-					break;
-				case "=ge=":
-					mongoOperatorQuery[exp1] = { $gte: typedExp2 };
-					break;
-				case "=lt=":
-					mongoOperatorQuery[exp1] = { $lt: typedExp2 };
-					break;
-				case "=le=":
-					mongoOperatorQuery[exp1] = { $lte: typedExp2 };
-					break;
-				case "=in=":
-					typedExp2 = typedExp2.replace("(","");
-					typedExp2 = typedExp2.replace(")","");
-					var typedValues = new Array();
-					for ( var token of typedExp2.split(",") ) {
-						typedValues.push(setType(token.trim()));
-					}
-					mongoOperatorQuery[exp1] = { $in: typedValues };
-					break;
-				case "=out=":
-					typedExp2 = typedExp2.replace("(","");
-					typedExp2 = typedExp2.replace(")","");
-					var typedValues = new Array();
-					for ( var token of typedExp2.split(",") ) {
-						typedValues.push(setType(token.trim()));
-					}
-					mongoOperatorQuery[exp1] = { $nin: typedValues };
-					break;
-				case "=~":
-					var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
-					mongoOperatorQuery[exp1] = { $regex: setType(expArr[0]), $options: expArr[2] || "" };
-					break;
-				case "=exists=":
-					mongoOperatorQuery[exp1] = { $exists: typedExp2 };
-					break;
-				default:
-					throw "Operator not supported."
+				var typedExp2 = setType(exp2);
+				var mongoOperatorQuery = {};
+
+				switch(operator){
+					case "==":
+						mongoOperatorQuery[exp1] = typedExp2;
+						break;
+					case "!=":
+						mongoOperatorQuery[exp1] = { $ne: typedExp2 };
+						break;
+					case "=gt=":
+						mongoOperatorQuery[exp1] = { $gt: typedExp2 };
+						break;
+					case "=ge=":
+						mongoOperatorQuery[exp1] = { $gte: typedExp2 };
+						break;
+					case "=lt=":
+						mongoOperatorQuery[exp1] = { $lt: typedExp2 };
+						break;
+					case "=le=":
+						mongoOperatorQuery[exp1] = { $lte: typedExp2 };
+						break;
+					case "=in=":
+						typedExp2 = typedExp2.replace("(","");
+						typedExp2 = typedExp2.replace(")","");
+						var typedValues = new Array();
+						for ( var token of typedExp2.split(",") ) {
+							typedValues.push(setType(token.trim()));
+						}
+						mongoOperatorQuery[exp1] = { $in: typedValues };
+						break;
+					case "=out=":
+						typedExp2 = typedExp2.replace("(","");
+						typedExp2 = typedExp2.replace(")","");
+						var typedValues = new Array();
+						for ( var token of typedExp2.split(",") ) {
+							typedValues.push(setType(token.trim()));
+						}
+						mongoOperatorQuery[exp1] = { $nin: typedValues };
+						break;
+					case "=~":
+						var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
+						mongoOperatorQuery[exp1] = { $regex: setType(expArr[0]), $options: expArr[2] || "" };
+						break;
+					case "=exists=":
+						mongoOperatorQuery[exp1] = { $exists: typedExp2 };
+						break;
+					default:
+						throw "Operator not supported."
+				}
+			}
+			catch(error){
+				throw error;
 			}
 
 			mongoStack.push(mongoOperatorQuery);
