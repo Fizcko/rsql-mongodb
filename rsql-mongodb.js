@@ -124,7 +124,7 @@ module.exports = function (input) {
 				}
 
 				// Push all operator presents in the parenthesis into 'outputTab'
-				while(logicalsTab[logicalsTab.length - 1] !== "(") {
+				while(logicalsTab.length > 0 && logicalsTab[logicalsTab.length - 1] !== "(") {
 					outputTab.push(logicalsTab.pop());
 				}
 				
