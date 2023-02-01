@@ -32,7 +32,7 @@ It's a query language that introduces basic and logical operators. This is perfe
 - OR : ,
 
 #### Additionals operators
-- Like : =~ (to match regex values)
+- Like (Regex) : =regex= (to match regex values)
 - Exists : =exists= (to check if property exists)
 
 ###### NOTE
