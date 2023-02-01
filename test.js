@@ -82,6 +82,7 @@ describe('rsql-mongodb', function () {
     });  
     it("Test errors", function () {
         expect(function () { rsqlMongoDB('azerty') }).to.throw('Wrong RSQL query. No operator found.');
+        expect(function () { rsqlMongoDB('lastName=~do*') }).to.throw('Wrong RSQL query. No operator found.');
         expect(function () { rsqlMongoDB("name=='SELECT (CHaR(75)||CHaR(76)||CHaR(77))'") }).to.throw('Wrong RSQL query. No operator found.');
         expect(function () { rsqlMongoDB('firstName=={ $where: [ { lastName : "doe" } ] }') }).to.throw('Injection detected.');
         expect(function () { rsqlMongoDB('birthday==1959-21-12') }).to.throw('Invalid Date.');
