@@ -77,13 +77,13 @@ try{
     //=> { "childs": { $nin: [1,2,3] } }
 
     // Like operator
-    rsqlMongoDB('lastName=~do*');
+    rsqlMongoDB('lastName=regex=do*');
     //=> { "lastName": { $regex: "do*", $options: "" } }
 
     // Like operator with options
-    rsqlMongoDB('lastName=~do*=si');
+    rsqlMongoDB('lastName=regex=do*=si');
     //=> { "lastName": { $regex: "do*", $options: "si" } }
-    rsqlMongoDB('lastName=~"do=*"=si');
+    rsqlMongoDB('lastName=regex="do=*"=si');
     //=> { "lastName": { $regex: "do=*", $options: "si" } }
 
     // Exists operator
