@@ -279,6 +279,8 @@ module.exports = function (input) {
 						break;
 					case "=regex=":
 						var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
+                        const regex = new RegExp(expArr[0]);
+                        regex.test('');
 						mongoOperatorQuery[exp1] = { $regex: setType(expArr[0]), $options: expArr[2] || "" };
 						break;
 					case "=exists=":
