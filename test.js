@@ -55,6 +55,7 @@ describe('rsql-mongodb', function () {
     });
     it("Test operator Like ('=regex=')", function () {
         expect(rsqlMongoDB('lastName=regex=do*')).to.deep.include({ "lastName": { $regex: "do*", $options: "" } });
+        expect(rsqlMongoDB('lastName=regex=.*oe')).to.deep.include({ "lastName": { $regex: ".*oe", $options: "" } });
         expect(rsqlMongoDB('lastName=regex=do*=i')).to.deep.include({ "lastName": { $regex: "do*", $options: "i" } });
         expect(rsqlMongoDB('lastName=regex=do*=mxs')).to.deep.include({ "lastName": { $regex: "do*", $options: "mxs" } });
         expect(rsqlMongoDB('lastName=regex="do=*"=mxs')).to.deep.include({ "lastName": { $regex: "do=*", $options: "mxs" } });
@@ -83,6 +84,7 @@ describe('rsql-mongodb', function () {
     it("Test errors", function () {
         expect(function () { rsqlMongoDB('azerty') }).to.throw('Wrong RSQL query. No operator found.');
         expect(function () { rsqlMongoDB('lastName=~do*') }).to.throw('Wrong RSQL query. No operator found.');
+        expect(function () { rsqlMongoDB('lastName=regex=*oe') }).to.throw('Invalid regular expression');
         expect(function () { rsqlMongoDB("name=='SELECT (CHaR(75)||CHaR(76)||CHaR(77))'") }).to.throw('Wrong RSQL query. No operator found.');
         expect(function () { rsqlMongoDB('firstName=={ $where: [ { lastName : "doe" } ] }') }).to.throw('Injection detected.');
         expect(function () { rsqlMongoDB('birthday==1959-21-12') }).to.throw('Invalid Date.');
