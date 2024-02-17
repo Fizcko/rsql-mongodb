@@ -12,6 +12,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('birthday=="1959-10-21"')).to.deep.include({ "birthday" : "1959-10-21" });
         expect(rsqlMongoDB('birthday==1959-10-21')).to.be.a('object');
         expect(rsqlMongoDB('married==true')).to.deep.include({ "married" : true });
+        expect(rsqlMongoDB('childs==null')).to.deep.include({ "childs" : null });
         expect(rsqlMongoDB('childs==2')).to.deep.include({ "childs" : 2 });
         expect(rsqlMongoDB('creationDate==2021-10-30T00:00:00.000Z')).to.be.a('object');
     });
@@ -20,6 +21,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('birthday!="1959-10-21"')).to.deep.include({ "birthday": { $ne: "1959-10-21" } });
         expect(rsqlMongoDB('birthday!=1959-10-21')).to.be.a('object');
         expect(rsqlMongoDB('married!=false')).to.deep.include({ "married": { $ne: false } });
+        expect(rsqlMongoDB('childs!=null')).to.deep.include({ "childs": { $ne: null } });
         expect(rsqlMongoDB('childs!=2')).to.deep.include({ "childs": { $ne: 2 } });
         
     });

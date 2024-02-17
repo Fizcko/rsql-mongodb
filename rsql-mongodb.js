@@ -15,6 +15,9 @@ function setType(input) {
     else if(input === 'false'){
         typedInput = false;
     }
+	else if(input === 'null'){
+        typedInput = null;
+    }
     else if (!isNaN(Number(input))) {
         typedInput = Number(input);
     }
