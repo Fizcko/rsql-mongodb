@@ -1,6 +1,6 @@
 {
   "name": "rsql-mongodb",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "Converting RSQL queries to MongoDB queries",
   "main": "rsql-mongodb.js",
   "typings": "rsql-mongodb.ts",

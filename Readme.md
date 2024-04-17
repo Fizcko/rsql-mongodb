@@ -95,8 +95,8 @@ try{
     //=> { $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }
 
     // Using "_id"
-    rsqlMongoDB('_id_==650a7389a7ab39ddcfbc6832');
-    //=> { "_id_" : new ObjectId('650a7389a7ab39ddcfbc6832') }
+    rsqlMongoDB('_id==650a7389a7ab39ddcfbc6832');
+    //=> { "_id" : new ObjectId('650a7389a7ab39ddcfbc6832') }
 }
 catch(err){
     console.log(err);
