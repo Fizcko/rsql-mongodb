@@ -93,7 +93,10 @@ try{
     // Groups
     rsqlMongoDB('(firstName=="john";lastName=="doe"),(firstName==janne;lastName==doe)');
     //=> { $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] }
-    
+
+    // Using "_id"
+    rsqlMongoDB('_id_==650a7389a7ab39ddcfbc6832');
+    //=> { "_id_" : new ObjectId('650a7389a7ab39ddcfbc6832') }
 }
 catch(err){
     console.log(err);

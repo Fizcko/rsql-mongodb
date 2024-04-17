@@ -2,6 +2,7 @@ const assert = require('assert');
 const chai = require('chai'); 
 const expect = chai.expect;
 const rsqlMongoDB = require('./');
+const { ObjectId } = require('bson');
 
 describe('rsql-mongodb', function () {
     it("Test null return", function () {
@@ -15,6 +16,10 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('childs==null')).to.deep.include({ "childs" : null });
         expect(rsqlMongoDB('childs==2')).to.deep.include({ "childs" : 2 });
         expect(rsqlMongoDB('creationDate==2021-10-30T00:00:00.000Z')).to.be.a('object');
+        expect(rsqlMongoDB('_id==650a7389a7ab39ddcfbc6832')).to.deep.include({ "_id": new ObjectId('650a7389a7ab39ddcfbc6832') });
+        expect(rsqlMongoDB('_id==650a7389a7ab39ddcfbc683')).to.deep.include({ "_id": '650a7389a7ab39ddcfbc683' });
+        expect(rsqlMongoDB('_id=="650a7389a7ab39ddcfbc6832"')).to.deep.include({ "_id": new ObjectId('650a7389a7ab39ddcfbc6832') });
+        expect(rsqlMongoDB("_id=='650a7389a7ab39ddcfbc6832'")).to.deep.include({ "_id": new ObjectId('650a7389a7ab39ddcfbc6832') });
     });
     it("Test operator Not Equal To ('!=')", function () {
         expect(rsqlMongoDB('lastName!="doe"')).to.deep.include({ "lastName": { $ne: "doe" } });
@@ -49,6 +54,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('childs=in=(1,2,3)')).to.deep.include({ "childs": { $in: [1,2,3] } });
         expect(rsqlMongoDB('childs=in=("1","2","3")')).to.deep.include({ "childs": { $in: ["1","2","3"] } });
         expect(rsqlMongoDB('childs=in=(1, 2, 3 )')).to.deep.include({ "childs": { $in: [1,2,3] } });
+        expect(rsqlMongoDB('_id=in=(650a7389a7ab39ddcfbc6832,650a7389a7ab39ddcfbc6833)')).to.deep.include({ "_id": { $in: [new ObjectId('650a7389a7ab39ddcfbc6832'),new ObjectId('650a7389a7ab39ddcfbc6833')] } });
     });
     it("Test operator Out ('=out=')", function () {
         expect(rsqlMongoDB('childs=out=(1,2,3)')).to.deep.include({ "childs": { $nin: [1,2,3] } });
@@ -69,6 +75,7 @@ describe('rsql-mongodb', function () {
     });
     it("Test logical operator AND (';')", function () {
         expect(rsqlMongoDB('firstName=="john";lastName=="doe"')).to.deep.include({ $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] });
+        expect(rsqlMongoDB('lastName=="doe";_id==650a7389a7ab39ddcfbc6832')).to.deep.include({ $and: [ { "lastName" : "doe" }, { "_id" : new ObjectId('650a7389a7ab39ddcfbc6832') } ] });
     }); 
     it("Test logical operator OR (',')", function () {
         expect(rsqlMongoDB('firstName=="john",firstName=="janne"')).to.deep.include({ $or: [ { "firstName" : "john" } , { "firstName" : "janne" } ] });

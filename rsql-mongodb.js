@@ -1,3 +1,5 @@
+const { ObjectId } = require('bson');
+
 function setType(input) {
 
     var typedInput = input;
@@ -34,6 +36,16 @@ function setType(input) {
     return typedInput;
 }
 
+function setTypeObjectId(input) {
+
+	// Remove quotes and double quotes
+	formatedInput = input.replace(/['"]+/g, '');
+
+	if(ObjectId.isValid(formatedInput))
+		return new ObjectId(formatedInput);
+	else
+		return setType(input);
+}
 module.exports = function (input) {
 
     // Define variables
@@ -45,6 +57,7 @@ module.exports = function (input) {
 	// Define logical & special operators
 	var logicals = [';', ','];
 	var specialOperators = ['=in=', '=out='];
+	var expForId = ["_id"];
 
 	// Apply Shunting-yard algorithm applied to this use case
 	//
@@ -239,8 +252,10 @@ module.exports = function (input) {
 
 
 			try{
-
 				var typedExp2 = setType(exp2);
+				if(expForId.indexOf(exp1) !== -1)
+					typedExp2 = setTypeObjectId(exp2);
+
 				var mongoOperatorQuery = {};
 
 				switch(operator){
@@ -267,7 +282,10 @@ module.exports = function (input) {
 						typedExp2 = typedExp2.replace(")","");
 						var typedValues = new Array();
 						for ( var token of typedExp2.split(",") ) {
-							typedValues.push(setType(token.trim()));
+							var value = setType(token.trim());
+							if(expForId.indexOf(exp1) !== -1)
+								value = setTypeObjectId(value);
+							typedValues.push(value);
 						}
 						mongoOperatorQuery[exp1] = { $in: typedValues };
 						break;
@@ -276,7 +294,10 @@ module.exports = function (input) {
 						typedExp2 = typedExp2.replace(")","");
 						var typedValues = new Array();
 						for ( var token of typedExp2.split(",") ) {
-							typedValues.push(setType(token.trim()));
+							var value = setType(token.trim());
+							if(expForId.indexOf(exp1) !== -1)
+								value = setTypeObjectId(value);
+							typedValues.push(value);
 						}
 						mongoOperatorQuery[exp1] = { $nin: typedValues };
 						break;
