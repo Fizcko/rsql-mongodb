@@ -74,6 +74,11 @@ module.exports = function (input) {
 			if(specialOperator){
 				outputString += character;
 			}
+			// Manage escape character
+			else if(outputString[outputString.length - 1] == "\\"){
+				outputString = outputString.substring(0, outputString.length - 1);
+				outputString += character;
+			}
 			else{
 				
 				// Get last logical operator in the 'logicalsTab'
@@ -111,6 +116,11 @@ module.exports = function (input) {
 				specialOperator = true;
 				outputString += character;
 			}
+			// Manage escape character
+			else if(outputString[outputString.length - 1] == "\\"){
+				outputString = outputString.substring(0, outputString.length - 1);
+				outputString += character;
+			}
 			// Else push the character into the 'logicalsTab'
 			else{
 				
@@ -129,6 +139,11 @@ module.exports = function (input) {
 			// if the parenthesis is value of a special operator then push it into 'outputString' buffer
 			if(specialOperator){
 				specialOperator = false;
+				outputString += character;
+			}
+			// Manage escape character
+			else if(outputString[outputString.length - 1] == "\\"){
+				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
 			}
 			else{

@@ -20,6 +20,9 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('_id==650a7389a7ab39ddcfbc683')).to.deep.include({ "_id": '650a7389a7ab39ddcfbc683' });
         expect(rsqlMongoDB('_id=="650a7389a7ab39ddcfbc6832"')).to.deep.include({ "_id": new ObjectId('650a7389a7ab39ddcfbc6832') });
         expect(rsqlMongoDB("_id=='650a7389a7ab39ddcfbc6832'")).to.deep.include({ "_id": new ObjectId('650a7389a7ab39ddcfbc6832') });
+        expect(rsqlMongoDB('lastName=="janne\\(doe\\)"')).to.deep.include({ "lastName" : "janne(doe)" });
+        expect(rsqlMongoDB('lastName=="janne\\;doe"')).to.deep.include({ "lastName" : "janne;doe" });
+        expect(rsqlMongoDB('lastName=="janne\\,doe"')).to.deep.include({ "lastName" : "janne,doe" });
     });
     it("Test operator Not Equal To ('!=')", function () {
         expect(rsqlMongoDB('lastName!="doe"')).to.deep.include({ "lastName": { $ne: "doe" } });

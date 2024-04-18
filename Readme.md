@@ -97,6 +97,12 @@ try{
     // Using "_id"
     rsqlMongoDB('_id==650a7389a7ab39ddcfbc6832');
     //=> { "_id" : new ObjectId('650a7389a7ab39ddcfbc6832') }
+
+    // Escape special character "(" ")" ";" and ","
+    rsqlMongoDB('lastName=="janne\\(doe\\)"')
+    //=> { "lastName" : "janne(doe)" }
+    rsqlMongoDB('lastName=="janne\\;doe"')
+    //=> { "lastName" : "janne;doe" }
 }
 catch(err){
     console.log(err);
