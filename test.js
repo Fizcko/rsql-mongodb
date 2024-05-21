@@ -57,12 +57,14 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('childs=in=(1,2,3)')).to.deep.include({ "childs": { $in: [1,2,3] } });
         expect(rsqlMongoDB('childs=in=("1","2","3")')).to.deep.include({ "childs": { $in: ["1","2","3"] } });
         expect(rsqlMongoDB('childs=in=(1, 2, 3 )')).to.deep.include({ "childs": { $in: [1,2,3] } });
-        expect(rsqlMongoDB('_id=in=(650a7389a7ab39ddcfbc6832,650a7389a7ab39ddcfbc6833)')).to.deep.include({ "_id": { $in: [new ObjectId('650a7389a7ab39ddcfbc6832'),new ObjectId('650a7389a7ab39ddcfbc6833')] } });
+        expect(rsqlMongoDB('_id=in=(650a7389a7ab39ddcfbc6832,650a7389a7ab39ddcfbc6833)')).to.deep.include({ "_id": { $in: [new ObjectId('650a7389a7ab39ddcfbc6832'),new ObjectId('650a7389a7ab39ddcfbc6833')] }});
+        expect(rsqlMongoDB('invoice.userid=in=("XXFF11 \\(180kW\\)")')).to.deep.include({ "invoice.userid": { $in: ['XXFF11 (180kW)'] } });
     });
     it("Test operator Out ('=out=')", function () {
         expect(rsqlMongoDB('childs=out=(1,2,3)')).to.deep.include({ "childs": { $nin: [1,2,3] } });
         expect(rsqlMongoDB('childs=out=("1","2","3")')).to.deep.include({ "childs": { $nin: ["1","2","3"] } });
         expect(rsqlMongoDB('childs=out=(1, 2, 3 )')).to.deep.include({ "childs": { $nin: [1,2,3] } });
+        expect(rsqlMongoDB('invoice.userid=out=("XXFF11 \\(180kW\\)")')).to.deep.include({ "invoice.userid": { $nin: ['XXFF11 (180kW)'] } });
     });
     it("Test operator Like ('=regex=')", function () {
         expect(rsqlMongoDB('lastName=regex=do*')).to.deep.include({ "lastName": { $regex: "do*", $options: "" } });

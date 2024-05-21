@@ -138,8 +138,14 @@ module.exports = function (input) {
 
 			// if the parenthesis is value of a special operator then push it into 'outputString' buffer
 			if(specialOperator){
-				specialOperator = false;
-				outputString += character;
+				if(outputString[outputString.length - 1] == "\\"){
+					outputString = outputString.substring(0, outputString.length - 1);
+					outputString += character;
+				}
+				else{
+					specialOperator = false;
+					outputString += character;
+				}
 			}
 			// Manage escape character
 			else if(outputString[outputString.length - 1] == "\\"){
@@ -293,8 +299,10 @@ module.exports = function (input) {
 						mongoOperatorQuery[exp1] = { $lte: typedExp2 };
 						break;
 					case "=in=":
-						typedExp2 = typedExp2.replace("(","");
-						typedExp2 = typedExp2.replace(")","");
+						if(typedExp2[0] == "(")
+							typedExp2 = typedExp2.slice(1);
+						if(typedExp2[typedExp2.length -1] == ")")
+							typedExp2 = typedExp2.slice(0, typedExp2.length -1);
 						var typedValues = new Array();
 						for ( var token of typedExp2.split(",") ) {
 							var value = setType(token.trim());
@@ -305,8 +313,10 @@ module.exports = function (input) {
 						mongoOperatorQuery[exp1] = { $in: typedValues };
 						break;
 					case "=out=":
-						typedExp2 = typedExp2.replace("(","");
-						typedExp2 = typedExp2.replace(")","");
+						if(typedExp2[0] == "(")
+							typedExp2 = typedExp2.slice(1);
+						if(typedExp2[typedExp2.length -1] == ")")
+							typedExp2 = typedExp2.slice(0, typedExp2.length -1);
 						var typedValues = new Array();
 						for ( var token of typedExp2.split(",") ) {
 							var value = setType(token.trim());
