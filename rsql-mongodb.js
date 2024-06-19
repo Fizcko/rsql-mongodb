@@ -58,6 +58,7 @@ module.exports = function (input) {
 	var logicals = [';', ','];
 	var specialOperators = ['=in=', '=out='];
 	var expForId = ["_id"];
+	var isInQuotes = false;
 
 	// Apply Shunting-yard algorithm applied to this use case
 	//
@@ -67,8 +68,13 @@ module.exports = function (input) {
 		// Move into input string
 		var character = input[i];
 
+		// Check if the character is a single quote and toggle the isInQuotes flag
+		if (character === "'") {
+			isInQuotes = !isInQuotes;
+		}
+
 		// If the character is a logical operator
-		if(logicals.indexOf(character) !== -1) {
+		if(!isInQuotes && logicals.indexOf(character) !== -1) {
 			
 			// If the character is a special operator
 			if(specialOperator){

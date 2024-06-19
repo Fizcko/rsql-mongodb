@@ -84,7 +84,10 @@ describe('rsql-mongodb', function () {
     }); 
     it("Test logical operator OR (',')", function () {
         expect(rsqlMongoDB('firstName=="john",firstName=="janne"')).to.deep.include({ $or: [ { "firstName" : "john" } , { "firstName" : "janne" } ] });
-    }); 
+    });
+    it("Test Comma within single quoted string value is not considered as logicals. (',')", function () {
+        expect(rsqlMongoDB("firstName=='john,janne'")).to.deep.include({ "firstName" : "john,janne" });
+    });
     it("Test groups", function () {
         expect(rsqlMongoDB('(firstName==john;lastName==doe),(firstName==janne;lastName==doe)')).to.deep.include({ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] });
         expect(rsqlMongoDB('(firstName==john,firstName==janne),married==true;lastName==doe')).to.deep.include({$and:[{$or:[{$or:[{"firstName":"john"},{"firstName":"janne"}]},{"married":true}]},{"lastName":"doe"}]});
