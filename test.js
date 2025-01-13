@@ -73,6 +73,13 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('lastName=regex=do*=mxs')).to.deep.include({ "lastName": { $regex: "do*", $options: "mxs" } });
         expect(rsqlMongoDB('lastName=regex="do=*"=mxs')).to.deep.include({ "lastName": { $regex: "do=*", $options: "mxs" } });
     });
+    it("Test operator Not Like ('!=regex=')", function () {
+        expect(rsqlMongoDB('lastName!=regex=do*')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "" } }});
+        expect(rsqlMongoDB('lastName!=regex=.*oe')).to.deep.include({ "lastName": { $not: { $regex: ".*oe", $options: "" } }});
+        expect(rsqlMongoDB('lastName!=regex=do*=i')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "i" } }});
+        expect(rsqlMongoDB('lastName!=regex=do*=mxs')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "mxs" } }});
+        expect(rsqlMongoDB('lastName!=regex="do=*"=mxs')).to.deep.include({ "lastName": { $not: { $regex: "do=*", $options: "mxs" } }});
+    });
     it("Test operator Exists ('=exists=')", function () {
         expect(rsqlMongoDB('childs=exists=true')).to.deep.include({ "childs": { $exists: true } });
         expect(rsqlMongoDB('childs=exists=false')).to.deep.include({ "childs": { $exists: false } });

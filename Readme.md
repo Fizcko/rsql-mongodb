@@ -86,6 +86,12 @@ try{
     rsqlMongoDB('lastName=regex="do=*"=si');
     //=> { "lastName": { $regex: "do=*", $options: "si" } }
 
+     // Not like operator with options
+    rsqlMongoDB("lastName!=regex=do*=si");
+    //=> { "lastName": { $not: { $regex: "do*", $options: "si" } } }
+    rsqlMongoDB('lastName!=regex="do=*"=si');
+    //=> { "lastName": { $not: { $regex: "do=*", $options: "si" } } }
+
     // Exists operator
     rsqlMongoDB('childs=exists=true');
     //=> { "childs": { $exists: true } }
