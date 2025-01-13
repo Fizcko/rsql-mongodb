@@ -33,6 +33,7 @@ It's a query language that introduces basic and logical operators. This is perfe
 
 #### Additionals operators
 - Like (Regex) : =regex= (to match regex values)
+- Not Like (Regex) : =notregex= (to not match regex values)
 - Exists : =exists= (to check if property exists)
 
 ###### NOTE
