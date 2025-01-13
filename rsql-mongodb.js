@@ -264,7 +264,7 @@ module.exports = function (input) {
 			}
 
 			// Split the query
-			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=|=regex=|=exists=)(.*)/g;
+			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=|=regex=|=notregex=|=exists=)(.*)/g;
 			var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
 			try {
@@ -333,10 +333,20 @@ module.exports = function (input) {
 						mongoOperatorQuery[exp1] = { $nin: typedValues };
 						break;
 					case "=regex=":
-						var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
-                        const regex = new RegExp(expArr[0]);
-                        regex.test('');
-                        mongoOperatorQuery[exp1] = { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" };
+						{
+							var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
+                        	const regex = new RegExp(expArr[0]);
+                        	regex.test('');
+                        	mongoOperatorQuery[exp1] = { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" };
+						}
+						break;
+					case "=notregex=":
+						{
+							var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
+                        	const regex = new RegExp(expArr[0]);
+                        	regex.test('');
+                        	mongoOperatorQuery[exp1] = { $not: { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" } };
+						}
 						break;
 					case "=exists=":
 						mongoOperatorQuery[exp1] = { $exists: typedExp2 };
