@@ -264,7 +264,7 @@ module.exports = function (input) {
 			}
 
 			// Split the query
-			var rsqlOperators = /([^!]*)(!=regex=|=regex=|==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=|=exists=)(.*)/g;
+			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=|=regex=|=notregex=|=exists=)(.*)/g;
 			var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
 			try {
@@ -340,7 +340,7 @@ module.exports = function (input) {
                         	mongoOperatorQuery[exp1] = { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" };
 						}
 						break;
-					case "!=regex=":
+					case "=notregex=":
 						{
 							var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
                         	const regex = new RegExp(expArr[0]);

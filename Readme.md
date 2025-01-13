@@ -87,9 +87,9 @@ try{
     //=> { "lastName": { $regex: "do=*", $options: "si" } }
 
      // Not like operator with options
-    rsqlMongoDB("lastName!=regex=do*=si");
+    rsqlMongoDB("lastName==notregex=do*=si");
     //=> { "lastName": { $not: { $regex: "do*", $options: "si" } } }
-    rsqlMongoDB('lastName!=regex="do=*"=si');
+    rsqlMongoDB('lastName=notregex="do=*"=si');
     //=> { "lastName": { $not: { $regex: "do=*", $options: "si" } } }
 
     // Exists operator
