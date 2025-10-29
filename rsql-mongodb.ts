@@ -1,3 +1,4 @@
 declare function rsqlMongoDB (input: string): object;
 
-export = rsqlMongoDB;
+export default rsqlMongoDB;
+export { rsqlMongoDB };

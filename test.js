@@ -99,6 +99,29 @@ describe('rsql-mongodb', function () {
     it("Test groups", function () {
         expect(rsqlMongoDB('(firstName==john;lastName==doe),(firstName==janne;lastName==doe)')).to.deep.include({ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] });
         expect(rsqlMongoDB('(firstName==john,firstName==janne),married==true;lastName==doe')).to.deep.include({$and:[{$or:[{$or:[{"firstName":"john"},{"firstName":"janne"}]},{"married":true}]},{"lastName":"doe"}]});
+        expect(rsqlMongoDB('firstName=="john";((deadlineAt=ge=2025-08-05T16:44:05.522Z;deadlineAt=le=2025-08-06T16:44:05.522Z),(deadlineAt=le=2025-08-05T16:44:05.522Z;deadlineAt=ge=2025-08-04T16:44:05.522Z))')).to.deep.include(
+            {
+                '$and': [
+                    { firstName: 'john' },
+                    {
+                    '$or': [
+                        {
+                        '$and': [
+                            { deadlineAt: { '$gte': new Date("2025-08-05T16:44:05.522Z") } },
+                            { deadlineAt: { '$lte': new Date("2025-08-06T16:44:05.522Z") } }
+                        ]
+                        },
+                        {
+                        '$and': [
+                            { deadlineAt: { '$lte': new Date("2025-08-05T16:44:05.522Z") } },
+                            { deadlineAt: { '$gte': new Date("2025-08-04T16:44:05.522Z") } }
+                        ]
+                        }
+                    ]
+                    }
+                ]
+            }
+        );
     });
     it("Test other cases", function () {
         expect(rsqlMongoDB('firstName==john,firstName==janne,firstName==jim')).to.deep.include({$or:[{"firstName":"john"},{"firstName":"janne"},{"firstName":"jim"}]});
