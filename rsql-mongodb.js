@@ -68,8 +68,10 @@ module.exports = function (input) {
 	// Define logical operators and special cases
 	var logicals = [';', ',']; // ';' = AND, ',' = OR
 	var specialOperators = ['=in=', '=out=']; // Operators that take parenthesized lists
+	var regexOperators = ['=regex=', '=notregex=']; // Operators that use regex patterns
 	var expForId = ["_id"]; // Fields that should be converted to ObjectId
 	var isInQuotes = false; // Track if we're inside single quotes
+	var isInRegexValue = false; // Track if we're parsing a regex value
 
 	// Loop through each character of the input string
 	for(var i = 0; i < input.length; i++) {
@@ -81,6 +83,16 @@ module.exports = function (input) {
 			isInQuotes = !isInQuotes;
 		}
 
+		// Check if we just entered a regex value
+		if(!isInRegexValue) {
+			for(var j = 0; j < regexOperators.length; j++) {
+				if(outputString.endsWith(regexOperators[j])) {
+					isInRegexValue = true;
+					break;
+				}
+			}
+		}
+
 		// Handle logical operators (';' for AND, ',' for OR)
 		if(!isInQuotes && logicals.indexOf(character) !== -1) {
 
@@ -88,8 +100,8 @@ module.exports = function (input) {
 			if(specialOperator){
 				outputString += character;
 			}
-			// Handle escaped characters (e.g., \, or \;)
-			else if(outputString[outputString.length - 1] == "\\"){
+			// Handle escaped characters (e.g., \, or \;) - but not in regex values
+			else if(!isInRegexValue && outputString[outputString.length - 1] == "\\"){
 				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
 			}
@@ -102,6 +114,7 @@ module.exports = function (input) {
 				if(outputString){
 					outputTab.push(outputString);
 					outputString = "";
+					isInRegexValue = false; // Reset regex flag when token is complete
 				}
 
 				// Pop operators from stack to output based on precedence
@@ -147,7 +160,11 @@ module.exports = function (input) {
 				specialOperator = true;
 				outputString += character;
 			}
-			// Handle escaped parenthesis
+			// If we're in a regex value, treat ( as part of the pattern
+			else if(isInRegexValue){
+				outputString += character;
+			}
+			// Handle escaped parenthesis - but not in regex values where backslash is significant
 			else if(outputString[outputString.length - 1] == "\\"){
 				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
@@ -158,6 +175,7 @@ module.exports = function (input) {
 				if(outputString){
 					outputTab.push(outputString);
 					outputString = "";
+					isInRegexValue = false; // Reset regex flag when token is complete
 				}
 
 				// Push the opening parenthesis to operator stack
@@ -170,7 +188,7 @@ module.exports = function (input) {
 
 			// If this closes a special operator's value list
 			if(specialOperator){
-				if(outputString[outputString.length - 1] == "\\"){
+				if(!isInRegexValue && outputString[outputString.length - 1] == "\\"){
 					outputString = outputString.substring(0, outputString.length - 1);
 					outputString += character;
 				}
@@ -179,7 +197,11 @@ module.exports = function (input) {
 					outputString += character;
 				}
 			}
-			// Handle escaped parenthesis
+			// If we're in a regex value, treat ) as part of the pattern
+			else if(isInRegexValue){
+				outputString += character;
+			}
+			// Handle escaped parenthesis - but not in regex values where backslash is significant
 			else if(outputString[outputString.length - 1] == "\\"){
 				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
@@ -191,6 +213,7 @@ module.exports = function (input) {
 				if(outputString){
 					outputTab.push(outputString);
 					outputString = "";
+					isInRegexValue = false; // Reset regex flag when token is complete
 				}
 
 				// Pop all operators until we find the matching opening parenthesis
@@ -215,6 +238,7 @@ module.exports = function (input) {
 	if(outputString){
 		outputTab.push(outputString);
 		outputString = "";
+		isInRegexValue = false; // Reset regex flag
 	}
 
 	// Pop all remaining operators from stack to output
