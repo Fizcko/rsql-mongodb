@@ -5,3 +5,5 @@ coverage/
 !*.d.ts
 tsconfig.json
 .travis.yml
+dev.js
+.claude

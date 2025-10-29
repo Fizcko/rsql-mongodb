@@ -1,28 +1,33 @@
 const { ObjectId } = require('bson');
 
 function setType(input) {
-
     var typedInput = input;
 
     var matchQuotes = /^(["']{1})(.*)(["']{1})$/g;
     var matchQuotesResults = matchQuotes.exec(input);
     var matchDate = /(\d{4})-(\d{2})-(\d{2})/g;
 
+    // Handle quoted strings - remove quotes and return the inner value
     if(matchQuotesResults){
         typedInput = matchQuotesResults[2];
     }
+    // Handle boolean true
     else if(input === 'true'){
         typedInput = true;
     }
+    // Handle boolean false
     else if(input === 'false'){
         typedInput = false;
     }
+    // Handle null
 	else if(input === 'null'){
         typedInput = null;
     }
+    // Handle numbers
     else if (!isNaN(Number(input))) {
         typedInput = Number(input);
     }
+    // Handle dates (ISO format or partial dates)
     else if(matchDate.exec(input)){
         if(Date.parse(input)){
             var isoUTCDate = new Date(input).toISOString();
@@ -36,113 +41,134 @@ function setType(input) {
     return typedInput;
 }
 
-function setTypeObjectId(input) {
 
+function setTypeObjectId(input) {
 	// Remove quotes and double quotes
 	formatedInput = input.replace(/['"]+/g, '');
 
+	// Check if the input is a valid ObjectId (24 hex characters)
 	if(ObjectId.isValid(formatedInput))
 		return new ObjectId(formatedInput);
 	else
 		return setType(input);
 }
+
 module.exports = function (input) {
 
-    // Define variables
-	var outputString = "";
-	var outputTab = [];
-	var logicalsTab = [];
-	var specialOperator = false;
+    // =========================================================================
+    // PHASE 1: TOKENIZATION - Convert input string to Reverse Polish Notation
+    // Using Shunting-yard algorithm to handle operator precedence and parentheses
+    // =========================================================================
 
-	// Define logical & special operators
-	var logicals = [';', ','];
-	var specialOperators = ['=in=', '=out='];
-	var expForId = ["_id"];
-	var isInQuotes = false;
+	var outputString = ""; // Buffer for current token being built
+	var outputTab = []; // Output queue (RPN result)
+	var logicalsTab = []; // Operator stack
+	var specialOperator = false; // Flag to track if we're inside =in=() or =out=()
 
-	// Apply Shunting-yard algorithm applied to this use case
-	//
-	// Loop for each character of the input string
+	// Define logical operators and special cases
+	var logicals = [';', ',']; // ';' = AND, ',' = OR
+	var specialOperators = ['=in=', '=out=']; // Operators that take parenthesized lists
+	var expForId = ["_id"]; // Fields that should be converted to ObjectId
+	var isInQuotes = false; // Track if we're inside single quotes
+
+	// Loop through each character of the input string
 	for(var i = 0; i < input.length; i++) {
 
-		// Move into input string
 		var character = input[i];
 
-		// Check if the character is a single quote and toggle the isInQuotes flag
+		// Toggle quote tracking to ignore logical operators inside single quotes
 		if (character === "'") {
 			isInQuotes = !isInQuotes;
 		}
 
-		// If the character is a logical operator
+		// Handle logical operators (';' for AND, ',' for OR)
 		if(!isInQuotes && logicals.indexOf(character) !== -1) {
-			
-			// If the character is a special operator
+
+			// If we're inside =in=() or =out=(), treat this as literal character
 			if(specialOperator){
 				outputString += character;
 			}
-			// Manage escape character
+			// Handle escaped characters (e.g., \, or \;)
 			else if(outputString[outputString.length - 1] == "\\"){
 				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
 			}
 			else{
-				
-				// Get last logical operator in the 'logicalsTab'
+
+				// Get last logical operator from the operator stack
 				var lastLogical = logicalsTab[logicalsTab.length - 1];
 
-				// If there is something into buffer 'outputString' push it into 'outputTab'
+				// Flush current token to output if there is one
 				if(outputString){
 					outputTab.push(outputString);
-					outputString = ""; 
+					outputString = "";
 				}
 
-				// Push the logical character into 'outputTab' if the last logical operator is not the same that the current
+				// Pop operators from stack to output based on precedence
+				// In RSQL/MongoDB: ',' (OR) has HIGHER precedence than ';' (AND)
+				// This means OR binds tighter and is evaluated first
+				// Example: a;b,c;d = a;(b,c);d
 				while(logicals.indexOf(lastLogical) !== -1) {
-					if(lastLogical == character){
-						logicalsTab.pop();
-					}
-					else{
+					// If current is ';' (AND) and stack has ',' (OR - higher precedence)
+					// Pop the OR first (higher precedence operators pop first)
+					if(character == ';' && lastLogical == ','){
 						outputTab.push(logicalsTab.pop());
+						lastLogical = logicalsTab[logicalsTab.length - 1];
 					}
-					
-					lastLogical = logicalsTab[logicalsTab.length - 1];
+					// If current is ',' (OR) and stack has ';' (AND - lower precedence)
+					// Don't pop - OR has higher precedence
+					else if(character == ',' && lastLogical == ';'){
+						break;
+					}
+					// If same operator (left-associative), pop from stack
+					else if(character == lastLogical){
+						outputTab.push(logicalsTab.pop());
+						lastLogical = logicalsTab[logicalsTab.length - 1];
+					}
+					// Otherwise, stop popping
+					else{
+						break;
+					}
 				}
 
-				// Push the character into 'logicalsTab'
+				// Push current operator to stack
 				logicalsTab.push(character);
 
 			}
 
-		} 
-		// If the character is an open parenthesis
+		}
+		// Handle opening parenthesis
 		else if(character === "(") {
 
-			// if the parenthesis is value of a special operator then push it into 'outputString' buffer
-			if(specialOperators.indexOf(outputString.substring(outputString.length - 4, outputString.length)) !== -1 || specialOperators.indexOf(outputString.substring(outputString.length - 5, outputString.length)) !== -1){
+			// Check if this parenthesis belongs to a special operator (=in= or =out=)
+			if(specialOperators.indexOf(outputString.substring(outputString.length - 4, outputString.length)) !== -1 ||
+			   specialOperators.indexOf(outputString.substring(outputString.length - 5, outputString.length)) !== -1){
+				// Mark that we're inside a special operator's value list
 				specialOperator = true;
 				outputString += character;
 			}
-			// Manage escape character
+			// Handle escaped parenthesis
 			else if(outputString[outputString.length - 1] == "\\"){
 				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
 			}
-			// Else push the character into the 'logicalsTab'
+			// This is a grouping parenthesis
 			else{
-				
-				// Push all operator presents in 'logicalsTab' into 'outputTab'
-				while(logicalsTab.length > 0) {
-					outputTab.push(logicalsTab.pop());
+				// Flush current token to output
+				if(outputString){
+					outputTab.push(outputString);
+					outputString = "";
 				}
+
+				// Push the opening parenthesis to operator stack
 				logicalsTab.push(character);
-				outputTab.push(character);
 			}
 
-		} 
-		// If the character is a closed parenthesis
+		}
+		// Handle closing parenthesis
 		else if(character === ")") {
 
-			// if the parenthesis is value of a special operator then push it into 'outputString' buffer
+			// If this closes a special operator's value list
 			if(specialOperator){
 				if(outputString[outputString.length - 1] == "\\"){
 					outputString = outputString.substring(0, outputString.length - 1);
@@ -153,109 +179,109 @@ module.exports = function (input) {
 					outputString += character;
 				}
 			}
-			// Manage escape character
+			// Handle escaped parenthesis
 			else if(outputString[outputString.length - 1] == "\\"){
 				outputString = outputString.substring(0, outputString.length - 1);
 				outputString += character;
 			}
+			// This closes a grouping parenthesis
 			else{
 
-				// If there is something into buffer 'outputString' push it into 'outputTab'
+				// Flush current token to output
 				if(outputString){
 					outputTab.push(outputString);
-					outputString = ""; 
+					outputString = "";
 				}
 
-				// Push all operator presents in the parenthesis into 'outputTab'
+				// Pop all operators until we find the matching opening parenthesis
 				while(logicalsTab.length > 0 && logicalsTab[logicalsTab.length - 1] !== "(") {
 					outputTab.push(logicalsTab.pop());
 				}
-				
-				// Remove the open parenthesis from 'logicalsTab'
+
+				// Remove the opening parenthesis from stack
 				logicalsTab.pop();
+
+				// Add closing parenthesis as a marker in output
 				outputTab.push(character);
 			}
 		}
-		// If the character is not an operator push it into the 'outputString' buffer
+		// Regular character - add to current token buffer
 		else{
-
 			outputString += character;
-
 		}
 	}
 
-	// If there is something into buffer 'outputString' push it into 'outputTab'
+	// Flush any remaining token in the buffer
 	if(outputString){
-
 		outputTab.push(outputString);
 		outputString = "";
 	}
 
-	// Push all operator presents in 'logicalsTab' into 'outputTab'
+	// Pop all remaining operators from stack to output
 	while(logicalsTab.length > 0) {
 		outputTab.push(logicalsTab.pop());
 	}
 
-	
-	// Now format the MongoDb Query
+	// =========================================================================
+	// PHASE 2: BUILD MONGODB QUERY - Convert RPN to MongoDB query structure
+	// Process the tokens in RPN order to build nested MongoDB operators
+	// =========================================================================
 
-	// Define variables
-	var mongoStack = [];
-	var mongoQuery = [];
-	var tmpPrecedence = [];
-	var lastLogical = "";
-	var lastLogicalBeforePrecedence = ""
-	
+	var mongoStack = []; // Working stack for building query
+	var groupMarkers = []; // Track which stack items are from groups
+
 	for(var i = 0; i < outputTab.length; i++) {
 
+		// Handle logical operators (AND/OR)
 		if(logicals.indexOf(outputTab[i]) !== -1){
 
-			var newValue = {};
-			var tmpArray = [];
+			// Pop two operands from stack
+			var operand2 = mongoStack.pop();
+			var isGroup2 = groupMarkers.pop() || false;
+			var operand1 = mongoStack.pop();
+			var isGroup1 = groupMarkers.pop() || false;
 
-			switch(outputTab[i]){
-				case ";":
-				case ",":
-					if(i == (outputTab.length -1) || (mongoQuery.length == 1)){
-						while(mongoQuery.length > 0) {
-							tmpArray.push(mongoQuery.shift())
-						}
-					}
-					while(mongoStack.length > 0) {
-						tmpArray.push(mongoStack.shift())
-					}
-					if(outputTab[i] == ";"){
-						lastLogical = '$and';
-						newValue[lastLogical] = tmpArray;
-					}
-					else{
-						lastLogical = '$or';
-						newValue[lastLogical] = tmpArray;
-					}
-					break;
-				default:
-					throw "Logical operator not supported."
+			// Determine MongoDB operator based on RSQL operator
+			var mongoOperator = (outputTab[i] == ";") ? '$and' : '$or';
+
+			var result = {};
+			var resultIsGroup = false;
+
+			// Only merge if operand1 has the same operator AND it's not from a closed group
+			if(!isGroup1 && operand1 && Object.keys(operand1).length === 1 && operand1[mongoOperator]){
+				operand1[mongoOperator].push(operand2);
+				result = operand1;
+				resultIsGroup = false; // Merged result is not a closed group
+			}
+			// Otherwise create new operator structure
+			else{
+				result[mongoOperator] = [operand1, operand2];
+				// If either operand was a group, the result inherits that status
+				resultIsGroup = isGroup1 || isGroup2;
 			}
 
-			mongoQuery.push(newValue);
+			// Push result back onto stack
+			mongoStack.push(result);
+			groupMarkers.push(resultIsGroup);
 
 		}
-		else if( outputTab[i] == '('){
-			tmpPrecedence = mongoQuery.shift();
-			lastLogicalBeforePrecedence = lastLogical;
+		// Handle opening parenthesis - just a marker, skip it
+		else if(outputTab[i] == '('){
+			// Opening parenthesis was already handled during tokenization
+			// We keep it in outputTab to maintain structure but don't process it here
 		}
-		else if( outputTab[i] == ')'){
-			if(tmpPrecedence){
-				tmpPrecedence[lastLogicalBeforePrecedence].push(mongoQuery.shift());
-				mongoQuery.push(tmpPrecedence);
-
-			}else{
-
+		// Handle closing parenthesis - marks end of a grouped expression
+		else if(outputTab[i] == ')'){
+			// Mark the top stack item as coming from a closed group
+			// This prevents it from being merged with subsequent operators
+			if(groupMarkers.length > 0) {
+				groupMarkers[groupMarkers.length - 1] = true;
 			}
 		}
+		// Handle comparison expressions (e.g., firstName=="john")
 		else{
 
-			// Verify if the is no injections
+			// Security: Check for MongoDB injection attempts
 			var mongoQueryOperators = /(\$\w+:)/g;
 			var badQuery = mongoQueryOperators.exec(outputTab[i]);
 
@@ -263,28 +289,31 @@ module.exports = function (input) {
 				throw "Injection detected."
 			}
 
-			// Split the query
+			// Parse the RSQL comparison expression
+			// Format: field operator value (e.g., firstName=="john")
 			var rsqlOperators = /(.*)(==|!=|=gt=|=ge=|=lt=|=le=|=in=|=out=|=regex=|=notregex=|=exists=)(.*)/g;
 			var rsqlQuery = rsqlOperators.exec(outputTab[i]);
 
 			try {
-				var exp1 = rsqlQuery[1];
-				var exp2 = rsqlQuery[3];
-				var operator = rsqlQuery[2];
-				
+				var exp1 = rsqlQuery[1]; // Field name
+				var exp2 = rsqlQuery[3]; // Value
+				var operator = rsqlQuery[2]; // RSQL operator
 			}
 			catch(e){
 				throw "Wrong RSQL query. No operator found."
 			}
 
-
 			try{
+				// Convert value to appropriate JavaScript type
 				var typedExp2 = setType(exp2);
+
+				// Special handling for _id field - convert to ObjectId if valid
 				if(expForId.indexOf(exp1) !== -1)
 					typedExp2 = setTypeObjectId(exp2);
 
 				var mongoOperatorQuery = {};
 
+				// Convert RSQL operator to MongoDB operator
 				switch(operator){
 					case "==":
 						mongoOperatorQuery[exp1] = typedExp2;
@@ -305,6 +334,7 @@ module.exports = function (input) {
 						mongoOperatorQuery[exp1] = { $lte: typedExp2 };
 						break;
 					case "=in=":
+						// Parse list: (value1,value2,value3)
 						if(typedExp2[0] == "(")
 							typedExp2 = typedExp2.slice(1);
 						if(typedExp2[typedExp2.length -1] == ")")
@@ -319,6 +349,7 @@ module.exports = function (input) {
 						mongoOperatorQuery[exp1] = { $in: typedValues };
 						break;
 					case "=out=":
+						// Parse list: (value1,value2,value3)
 						if(typedExp2[0] == "(")
 							typedExp2 = typedExp2.slice(1);
 						if(typedExp2[typedExp2.length -1] == ")")
@@ -334,18 +365,20 @@ module.exports = function (input) {
 						break;
 					case "=regex=":
 						{
+							// Parse regex with optional flags: pattern=flags
 							var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
-                        	const regex = new RegExp(expArr[0]);
-                        	regex.test('');
-                        	mongoOperatorQuery[exp1] = { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" };
+							const regex = new RegExp(expArr[0]);
+							regex.test(''); // Validate regex
+							mongoOperatorQuery[exp1] = { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" };
 						}
 						break;
 					case "=notregex=":
 						{
+							// Parse regex with optional flags: pattern=flags
 							var expArr = exp2.split(/(=)(?=(?:[^"]|"[^"]*")*$)/g);
-                        	const regex = new RegExp(expArr[0]);
-                        	regex.test('');
-                        	mongoOperatorQuery[exp1] = { $not: { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" } };
+							const regex = new RegExp(expArr[0]);
+							regex.test(''); // Validate regex
+							mongoOperatorQuery[exp1] = { $not: { $regex: `${setType(expArr[0])}`, $options: expArr[2] || "" } };
 						}
 						break;
 					case "=exists=":
@@ -359,16 +392,13 @@ module.exports = function (input) {
 				throw error;
 			}
 
+			// Push the MongoDB query condition onto the stack
 			mongoStack.push(mongoOperatorQuery);
-			
+			groupMarkers.push(false); // Regular expressions are not groups
 		}
-
-	}
-	
-	if(mongoStack.length == 1 && mongoQuery.length == 0){
-		mongoQuery = mongoStack;
 	}
 
-    return mongoQuery[0] || null;
+	// The final result should be the only item remaining on the stack
+	return mongoStack[0] || null;
 
 }
