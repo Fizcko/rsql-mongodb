@@ -1,0 +1,9 @@
+test/
+.nyc_output/
+coverage/
+*.ts
+!*.d.ts
+tsconfig.json
+.travis.yml
+dev.js
+.claude

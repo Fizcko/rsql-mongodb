@@ -72,6 +72,9 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('lastName=regex=do*=i')).to.deep.include({ "lastName": { $regex: "do*", $options: "i" } });
         expect(rsqlMongoDB('lastName=regex=do*=mxs')).to.deep.include({ "lastName": { $regex: "do*", $options: "mxs" } });
         expect(rsqlMongoDB('lastName=regex="do=*"=mxs')).to.deep.include({ "lastName": { $regex: "do=*", $options: "mxs" } });
+        expect(rsqlMongoDB('name=regex=Company_Name.*\\)=i')).to.deep.include({ "name": { $regex: "Company_Name.*\\)", $options: "i" } });
+        expect(rsqlMongoDB('name=regex=\\(test\\)')).to.deep.include({ "name": { $regex: "\\(test\\)", $options: "" } });
+        expect(rsqlMongoDB('name=regex=test\\.')).to.deep.include({ "name": { $regex: "test\\.", $options: "" } });
     });
     it("Test operator Not Like ('=notregex=')", function () {
         expect(rsqlMongoDB('lastName=notregex=do*')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "" } }});
@@ -79,6 +82,8 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('lastName=notregex=do*=i')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "i" } }});
         expect(rsqlMongoDB('lastName=notregex=do*=mxs')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "mxs" } }});
         expect(rsqlMongoDB('lastName=notregex="do=*"=mxs')).to.deep.include({ "lastName": { $not: { $regex: "do=*", $options: "mxs" } }});
+        expect(rsqlMongoDB('name=notregex=Company_Name.*\\)=i')).to.deep.include({ "name": { $not: { $regex: "Company_Name.*\\)", $options: "i" } }});
+        expect(rsqlMongoDB('name=notregex=\\(test\\)')).to.deep.include({ "name": { $not: { $regex: "\\(test\\)", $options: "" } }});
     });
     it("Test operator Exists ('=exists=')", function () {
         expect(rsqlMongoDB('childs=exists=true')).to.deep.include({ "childs": { $exists: true } });
@@ -99,6 +104,29 @@ describe('rsql-mongodb', function () {
     it("Test groups", function () {
         expect(rsqlMongoDB('(firstName==john;lastName==doe),(firstName==janne;lastName==doe)')).to.deep.include({ $or: [ { $and: [ { "firstName" : "john" } , { "lastName" : "doe" } ] } , { $and: [ { "firstName" : "janne" } , { "lastName" : "doe" } ] } ] });
         expect(rsqlMongoDB('(firstName==john,firstName==janne),married==true;lastName==doe')).to.deep.include({$and:[{$or:[{$or:[{"firstName":"john"},{"firstName":"janne"}]},{"married":true}]},{"lastName":"doe"}]});
+        expect(rsqlMongoDB('firstName=="john";((deadlineAt=ge=2025-08-05T16:44:05.522Z;deadlineAt=le=2025-08-06T16:44:05.522Z),(deadlineAt=le=2025-08-05T16:44:05.522Z;deadlineAt=ge=2025-08-04T16:44:05.522Z))')).to.deep.include(
+            {
+                '$and': [
+                    { firstName: 'john' },
+                    {
+                    '$or': [
+                        {
+                        '$and': [
+                            { deadlineAt: { '$gte': new Date("2025-08-05T16:44:05.522Z") } },
+                            { deadlineAt: { '$lte': new Date("2025-08-06T16:44:05.522Z") } }
+                        ]
+                        },
+                        {
+                        '$and': [
+                            { deadlineAt: { '$lte': new Date("2025-08-05T16:44:05.522Z") } },
+                            { deadlineAt: { '$gte': new Date("2025-08-04T16:44:05.522Z") } }
+                        ]
+                        }
+                    ]
+                    }
+                ]
+            }
+        );
     });
     it("Test other cases", function () {
         expect(rsqlMongoDB('firstName==john,firstName==janne,firstName==jim')).to.deep.include({$or:[{"firstName":"john"},{"firstName":"janne"},{"firstName":"jim"}]});
