@@ -197,9 +197,34 @@ module.exports = function (input) {
 					outputString += character;
 				}
 			}
-			// If we're in a regex value, treat ) as part of the pattern
+			// If we're in a regex value, check if ) is actually part of the pattern or closing a group
 			else if(isInRegexValue){
-				outputString += character;
+				// Check if there's an opening parenthesis in the operator stack
+				// If yes, this ) likely closes the group, not part of the regex
+				var hasOpenParenInStack = logicalsTab.indexOf('(') !== -1;
+
+				// If we have an opening paren in stack, this closes the group
+				if(hasOpenParenInStack) {
+					// Flush current token to output
+					outputTab.push(outputString);
+					outputString = "";
+					isInRegexValue = false; // Reset regex flag when token is complete
+
+					// Pop all operators until we find the matching opening parenthesis
+					while(logicalsTab.length > 0 && logicalsTab[logicalsTab.length - 1] !== "(") {
+						outputTab.push(logicalsTab.pop());
+					}
+
+					// Remove the opening parenthesis from stack
+					logicalsTab.pop();
+
+					// Add closing parenthesis as a marker in output
+					outputTab.push(character);
+				}
+				// Otherwise, ) is part of the regex pattern
+				else {
+					outputString += character;
+				}
 			}
 			// Handle escaped parenthesis - but not in regex values where backslash is significant
 			else if(outputString[outputString.length - 1] == "\\"){

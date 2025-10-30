@@ -75,6 +75,7 @@ describe('rsql-mongodb', function () {
         expect(rsqlMongoDB('name=regex=Company_Name.*\\)=i')).to.deep.include({ "name": { $regex: "Company_Name.*\\)", $options: "i" } });
         expect(rsqlMongoDB('name=regex=\\(test\\)')).to.deep.include({ "name": { $regex: "\\(test\\)", $options: "" } });
         expect(rsqlMongoDB('name=regex=test\\.')).to.deep.include({ "name": { $regex: "test\\.", $options: "" } });
+        expect(rsqlMongoDB('(name=regex="a"=i)')).to.deep.include({ name: { '$regex': 'a', '$options': 'i' } });
     });
     it("Test operator Not Like ('=notregex=')", function () {
         expect(rsqlMongoDB('lastName=notregex=do*')).to.deep.include({ "lastName": { $not: { $regex: "do*", $options: "" } }});
